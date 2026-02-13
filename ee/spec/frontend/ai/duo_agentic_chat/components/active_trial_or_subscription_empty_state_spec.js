@@ -4,6 +4,7 @@ import Vue from 'vue';
 import { GlAvatar } from '@gitlab/ui';
 import { DuoChatPredefinedPrompts } from '@gitlab/duo-ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import ActiveTrialOrSubscriptionEmptyState from 'ee/ai/duo_agentic_chat/components/active_trial_or_subscription_empty_state.vue';
 
 Vue.use(Vuex);
@@ -18,10 +19,7 @@ describe('ActiveTrialOrSubscriptionEmptyState', () => {
     { id: 'agent-3', name: 'Agent 3', avatarUrl: 'avatar3.png' },
   ];
 
-  const mockPrompts = [
-    { id: 'prompt-1', title: 'Prompt 1' },
-    { id: 'prompt-2', title: 'Prompt 2' },
-  ];
+  const mockPrompts = ['Prompt 1', 'Prompt 2'];
 
   const defaultProps = {
     agents: mockAgents,
@@ -101,11 +99,10 @@ describe('ActiveTrialOrSubscriptionEmptyState', () => {
     });
 
     it('emits "send-chat-prompt" when predefined prompt is clicked', () => {
-      const prompt = mockPrompts[0];
-      findPredefinedPrompts().vm.$emit('click', prompt);
+      findPredefinedPrompts().vm.$emit('click', mockPrompts[0]);
 
       expect(wrapper.emitted('send-chat-prompt')).toHaveLength(1);
-      expect(wrapper.emitted('send-chat-prompt')[0][0]).toEqual(prompt);
+      expect(wrapper.emitted('send-chat-prompt')[0][0]).toEqual(mockPrompts[0]);
     });
 
     it('emits "new-chat" when agent is clicked', () => {
@@ -114,6 +111,64 @@ describe('ActiveTrialOrSubscriptionEmptyState', () => {
 
       expect(wrapper.emitted('new-chat')).toHaveLength(1);
       expect(wrapper.emitted('new-chat')[0][0]).toEqual(agent);
+    });
+  });
+
+  describe('tracking', () => {
+    const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
+    it('tracks view event on mount', () => {
+      createComponent();
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'view_dap_trial_or_paid_empty_state',
+        {},
+        undefined,
+      );
+    });
+
+    it('tracks prompt click with label', () => {
+      createComponent();
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+      trackEventSpy.mockClear();
+
+      const prompt = mockPrompts[0];
+      findPredefinedPrompts().vm.$emit('click', prompt);
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_dap_trial_or_paid_empty_state_prompt',
+        { label: 'Prompt 1' },
+        undefined,
+      );
+    });
+
+    it('tracks agent click with label', async () => {
+      createComponent();
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+      trackEventSpy.mockClear();
+
+      await findAgentLinks().at(0).vm.$emit('click');
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_dap_trial_or_paid_empty_state_agent',
+        { label: 'Agent 1' },
+        undefined,
+      );
+    });
+
+    it('tracks explore agents link click', async () => {
+      createComponent();
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+      trackEventSpy.mockClear();
+
+      await findExploreLink().vm.$emit('click');
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_dap_trial_or_paid_empty_state_explore_agents_link',
+        {},
+        undefined,
+      );
     });
   });
 });

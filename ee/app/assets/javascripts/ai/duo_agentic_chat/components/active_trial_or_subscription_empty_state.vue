@@ -4,6 +4,7 @@ import { mapActions, mapState } from 'vuex';
 import { GlAvatar, GlIcon, GlLink } from '@gitlab/ui';
 import tanukiAiSvgUrl from '@gitlab/svgs/dist/illustrations/tanuki-ai-sm.svg?url';
 import { DuoChatPredefinedPrompts } from '@gitlab/duo-ui';
+import { InternalEvents } from '~/tracking';
 
 const SUGGESTED_AGENTS_LIMIT = 2;
 const DEFAULT_AGENT_ID = 'gid://gitlab/Ai::FoundationalChatAgent/chat';
@@ -16,6 +17,7 @@ export default {
     GlIcon,
     GlLink,
   },
+  mixins: [InternalEvents.mixin()],
   props: {
     agents: {
       type: Array,
@@ -43,15 +45,23 @@ export default {
     },
   },
   tanukiAiSvgUrl,
+  mounted() {
+    this.trackEvent('view_dap_trial_or_paid_empty_state');
+  },
   methods: {
     ...mapActions(['setCurrentAgent']),
     handleAgentClick(agent) {
+      this.trackEvent('click_dap_trial_or_paid_empty_state_agent', { label: agent.name });
       this.setCurrentAgent(agent);
 
       this.$emit('new-chat', agent);
     },
     sendPredefinedPrompt(prompt) {
+      this.trackEvent('click_dap_trial_or_paid_empty_state_prompt', { label: prompt });
       this.$emit('send-chat-prompt', prompt);
+    },
+    handleExploreAgentsClick() {
+      this.trackEvent('click_dap_trial_or_paid_empty_state_explore_agents_link');
     },
   },
 };
@@ -108,6 +118,7 @@ export default {
             :href="exploreAiCatalogPath"
             variant="meta"
             data-testid="explore-agents-link"
+            @click="handleExploreAgentsClick"
           >
             <gl-icon name="plus" />
             <span class="gl-font-bold">{{ s__('Agents|Explore other agents') }}</span>
