@@ -34,6 +34,11 @@ RSpec.describe Ci::Runner, feature_category: :hosted_runners do
     end
 
     it { is_expected.to have_one(:hosted_registration).class_name('Ci::HostedRunner').inverse_of(:runner) }
+
+    it 'have many runner_controller_runner_level_scopings' do
+      is_expected.to have_many(:runner_controller_runner_level_scopings)
+                       .class_name('Ci::RunnerControllerRunnerLevelScoping').inverse_of(:runner)
+    end
   end
 
   describe '#dedicated_gitlab_hosted?' do

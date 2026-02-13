@@ -21,6 +21,8 @@ module EE
           class_name: 'Ci::Minutes::InstanceRunnerMonthlyUsage',
           inverse_of: :runner
         has_one :hosted_registration, class_name: 'Ci::HostedRunner', inverse_of: :runner
+        has_many :runner_controller_runner_level_scopings,
+          class_name: 'Ci::RunnerControllerRunnerLevelScoping', inverse_of: :runner
 
         scope :with_top_running_builds_of_runner_type, ->(runner_type) do
           most_active_runners(->(relation) { relation.where(runner_type: runner_type) })
