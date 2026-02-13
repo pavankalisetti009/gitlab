@@ -398,30 +398,28 @@ module API
               post do
                 check_rate_limit!(:duo_workflow_direct_access, scope: current_user)
 
-                if Feature.enabled?(:usage_quota_check_in_direct_access, current_user)
-                  root_namespace = find_root_namespace!
+                root_namespace = find_root_namespace!
 
-                  ai_feature = if params[:workflow_definition] == "chat"
-                                 :duo_chat
-                               else
-                                 :duo_agent_platform
-                               end
+                ai_feature = if params[:workflow_definition] == "chat"
+                               :duo_chat
+                             else
+                               :duo_agent_platform
+                             end
 
-                  quota_check_response = ::Ai::UsageQuotaService.new(
-                    ai_feature: ai_feature,
-                    user: current_user,
-                    namespace: root_namespace
-                  ).execute
+                quota_check_response = ::Ai::UsageQuotaService.new(
+                  ai_feature: ai_feature,
+                  user: current_user,
+                  namespace: root_namespace
+                ).execute
 
-                  if quota_check_response.error?
-                    message = if quota_check_response.reason == :usage_quota_exceeded
-                                "USAGE_QUOTA_EXCEEDED: #{quota_check_response.message}"
-                              else
-                                quota_check_response.message
-                              end
+                if quota_check_response.error?
+                  message = if quota_check_response.reason == :usage_quota_exceeded
+                              "USAGE_QUOTA_EXCEEDED: #{quota_check_response.message}"
+                            else
+                              quota_check_response.message
+                            end
 
-                    forbidden!(message)
-                  end
+                  forbidden!(message)
                 end
 
                 oauth_token = gitlab_oauth_token
