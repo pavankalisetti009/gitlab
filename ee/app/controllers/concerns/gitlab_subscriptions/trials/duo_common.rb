@@ -24,7 +24,7 @@ module GitlabSubscriptions
       def set_group_name
         return unless namespace || GitlabSubscriptions::Trials.single_eligible_namespace?(eligible_namespaces)
 
-        @group_name = (namespace || eligible_namespaces.first).name # rubocop:disable Gitlab/ModuleWithInstanceVariables -- Acceptable use case
+        @group_name = (namespace || eligible_namespaces.first).name
       end
 
       def check_feature_available!

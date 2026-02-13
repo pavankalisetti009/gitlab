@@ -20,6 +20,6 @@ module IterationCadencesActions
   end
 
   def set_noteable_type
-    @noteable_type = Iteration # rubocop:disable Gitlab/ModuleWithInstanceVariables
+    @noteable_type = Iteration
   end
 end

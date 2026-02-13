@@ -20,13 +20,11 @@ module EE
 
         private
 
-        # rubocop:disable Gitlab/ModuleWithInstanceVariables
         def define_protected_env_variables
           @protected_environments = @group.protected_environments.sorted_by_name
           @protected_environment = ProtectedEnvironment.new(group: @group)
           @tiers = ::Environment.tiers.except(*names_for(@protected_environments))
         end
-        # rubocop:enable Gitlab/ModuleWithInstanceVariables
 
         # rubocop:disable CodeReuse/ActiveRecord
         def names_for(protected_environments)

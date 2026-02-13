@@ -163,8 +163,8 @@ module EE
     end
 
     def allow_mirror_params?
-      if @project # rubocop:disable Gitlab/ModuleWithInstanceVariables
-        can?(current_user, :admin_mirror, @project) # rubocop:disable Gitlab/ModuleWithInstanceVariables
+      if @project
+        can?(current_user, :admin_mirror, @project)
       else
         ::Gitlab::CurrentSettings.current_application_settings.mirror_available || current_user&.admin?
       end

@@ -12,9 +12,7 @@ module EE
       def index
         super
 
-        # rubocop:disable Gitlab/ModuleWithInstanceVariables -- Need to initialize pending members
         @pending_promotion_members_count = pending_promotion_members_count
-        # rubocop:enable Gitlab/ModuleWithInstanceVariables
       end
 
       private

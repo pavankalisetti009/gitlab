@@ -35,11 +35,9 @@ module EE
       def index
         super
 
-        # rubocop:disable Gitlab/ModuleWithInstanceVariables
         @banned = presented_banned_members
         @memberships_with_custom_role = present_group_members(group_memberships_with_custom_role)
         @pending_promotion_members_count = pending_promotion_members_count
-        # rubocop:enable Gitlab/ModuleWithInstanceVariables
       end
 
       def override

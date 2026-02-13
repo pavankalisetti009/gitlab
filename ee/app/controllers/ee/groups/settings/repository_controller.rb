@@ -31,7 +31,6 @@ module EE
           end
         end
 
-        # rubocop:disable Gitlab/ModuleWithInstanceVariables
         # rubocop:disable CodeReuse/ActiveRecord
         def define_protected_branches
           @protected_branches = group.protected_branches.order(:name).page(pagination_params[:page])
@@ -49,7 +48,6 @@ module EE
             protected_branch.protected_from_deletion = true
           end
         end
-        # rubocop:enable Gitlab/ModuleWithInstanceVariables
         # rubocop:enable CodeReuse/ActiveRecord
       end
     end

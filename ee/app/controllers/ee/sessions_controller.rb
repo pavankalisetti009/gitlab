@@ -54,8 +54,8 @@ module EE
       return unless ::Feature.enabled?(:two_step_sign_in, ::Feature.current_request)
       return unless ::Gitlab::Saas.feature_available?(:redirect_sign_in_when_login_not_found)
 
-      @username_or_email = ActionController::Base.helpers.sanitize(safe_login_param) # rubocop:disable Gitlab/ModuleWithInstanceVariables
-      @remember_me = ActionController::Base.helpers.sanitize(params.permit(:remember_me)[:remember_me]) # rubocop:disable Gitlab/ModuleWithInstanceVariables
+      @username_or_email = ActionController::Base.helpers.sanitize(safe_login_param)
+      @remember_me = ActionController::Base.helpers.sanitize(params.permit(:remember_me)[:remember_me])
     end
 
     def gitlab_geo_logout
@@ -65,7 +65,7 @@ module EE
       # ApplicationController#after_sign_out_path_for to redirect
       # the user to the logout URL on the primary after sign out
       # on the secondary.
-      @geo_logout_state = geo_logout_state.encode # rubocop:disable Gitlab/ModuleWithInstanceVariables
+      @geo_logout_state = geo_logout_state.encode
     end
 
     def geo_login_state

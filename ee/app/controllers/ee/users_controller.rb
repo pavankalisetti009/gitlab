@@ -21,17 +21,17 @@ module EE
     # The endpoints are going to be removed in
     # https://gitlab.com/gitlab-org/gitlab/-/issues/345897
     def available_project_templates
-      @custom_project_templates = # rubocop:disable Gitlab/ModuleWithInstanceVariables
+      @custom_project_templates =
         user.available_custom_project_templates(search: params[:search]).page(params[:page])
 
       render layout: false
     end
 
     def available_group_templates
-      @target_group = # rubocop:disable Gitlab/ModuleWithInstanceVariables
+      @target_group =
         GroupFinder.new(current_user).execute(id: params[:group_id])
 
-      @groups_with_project_templates = # rubocop:disable Gitlab/ModuleWithInstanceVariables
+      @groups_with_project_templates =
         user.available_subgroups_with_custom_project_templates(params[:group_id])
           .page(params[:page])
           # Workaround: to generate correct COUNT sql:

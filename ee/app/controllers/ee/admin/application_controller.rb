@@ -7,7 +7,7 @@ module EE
       #
       # @see EE::ApplicationHelper
       def limited_actions_message!
-        @limited_actions_message = true # rubocop:disable Gitlab/ModuleWithInstanceVariables
+        @limited_actions_message = true
       end
     end
   end

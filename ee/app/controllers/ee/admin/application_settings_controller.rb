@@ -285,13 +285,13 @@ module EE
         @new_license ||= License.new(data: params[:trial_key])
       end
 
-      # rubocop:disable CodeReuse/ActiveRecord, Gitlab/ModuleWithInstanceVariables -- splitting out legacy code
+      # rubocop:disable CodeReuse/ActiveRecord -- splitting out legacy code
       def find_or_initialize_microsoft_application
         return unless microsoft_group_sync_enabled?
 
         @microsoft_application = ::SystemAccess::MicrosoftApplication.find_or_initialize_by(namespace: nil)
       end
-      # rubocop:enable CodeReuse/ActiveRecord, Gitlab/ModuleWithInstanceVariables
+      # rubocop:enable CodeReuse/ActiveRecord
 
       def microsoft_application_params
         params.require(:system_access_microsoft_application)

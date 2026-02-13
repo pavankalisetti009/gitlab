@@ -12,7 +12,6 @@ module EE
           before_action :define_protected_env_variables, only: [:show]
         end
 
-        # rubocop:disable Gitlab/ModuleWithInstanceVariables
         override :show
         def show
           if project.feature_available?(:license_scanning)
