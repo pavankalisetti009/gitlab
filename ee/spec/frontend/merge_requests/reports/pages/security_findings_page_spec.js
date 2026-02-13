@@ -742,5 +742,29 @@ describe('Security findings page component', () => {
         expect(findVulnerabilityFindingModal().exists()).toBe(true);
       },
     );
+
+    describe('dismissed badge', () => {
+      it('updates finding state to dismissed when modal emits dismissed event', async () => {
+        const finding = createFinding();
+        await openModalWithFinding(finding);
+
+        expect(finding.state).toBe('detected');
+
+        findVulnerabilityFindingModal().vm.$emit('dismissed');
+        await nextTick();
+
+        expect(finding.state).toBe('dismissed');
+      });
+
+      it('updates finding state to detected when modal emits detected event', async () => {
+        const finding = createFinding({ state: 'dismissed' });
+        await openModalWithFinding(finding);
+
+        findVulnerabilityFindingModal().vm.$emit('detected');
+        await nextTick();
+
+        expect(finding.state).toBe('detected');
+      });
+    });
   });
 });
