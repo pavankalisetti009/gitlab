@@ -31,6 +31,7 @@ export default {
       required: false,
     },
   },
+  emits: ['create', 'link'],
   methods: {
     create() {
       this.$emit('create');

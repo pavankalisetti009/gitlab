@@ -1,6 +1,6 @@
 <script>
 import { GlAlert, GlBadge, GlButton, GlModal } from '@gitlab/ui';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { getIdFromGraphQLId, convertToGraphQLId } from '~/graphql_shared/utils';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { sprintf, s__, __ } from '~/locale';
@@ -15,7 +15,7 @@ import createUpstreamRegistryMutation from 'ee/packages_and_registries/virtual_r
 import { convertToMavenRegistryGraphQLId } from 'ee/packages_and_registries/virtual_registries/utils';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/maven/shared/registry_upstream_form.vue';
-import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/upstream_clear_cache_modal.vue';
+import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/clear_cache_modal.vue';
 import AddUpstream from './add_upstream.vue';
 import LinkUpstreamForm from './link_upstream_form.vue';
 import RegistryUpstreamItem from './registry_upstream_item.vue';
@@ -49,6 +49,9 @@ export default {
     getUpstreamsCountQuery: {
       default: null,
     },
+    ids: { default: {} },
+    deleteRegistryCacheMutation: { default: null },
+    deleteUpstreamCacheMutation: { default: null },
   },
   props: {
     loading: {
@@ -72,19 +75,7 @@ export default {
       default: () => [],
     },
   },
-  /**
-   * Emitted when an upstream is reordered
-   * @event upstreamReordered
-   */
-  /**
-   * Emitted when a new upstream is created
-   * @event upstreamCreated
-   */
-  /**
-   * Emitted when the upstream is deleted
-   * @event upstreamRemoved
-   */
-  emits: ['upstreamReordered', 'upstreamCreated', 'upstreamRemoved', 'upstreamLinked'],
+  emits: ['update'],
   data() {
     return {
       currentFormType: '',
@@ -165,7 +156,7 @@ export default {
 
       try {
         await updateMavenRegistryUpstreamPosition({ id, position });
-        this.$emit('upstreamReordered');
+        this.$emit('update');
         this.$toast.show(
           s__('VirtualRegistry|Position of the upstream has been updated successfully.'),
         );
@@ -193,7 +184,7 @@ export default {
         if (errors.length > 0) {
           this.createUpstreamError = errors.join(', ');
         } else {
-          this.emitUpstreamCreated();
+          this.hideFormAndEmitUpdate();
           this.$toast.show(s__('VirtualRegistry|Upstream created successfully.'));
         }
       } catch (error) {
@@ -211,12 +202,8 @@ export default {
         ...form,
       });
     },
-    emitUpstreamCreated() {
-      this.$emit('upstreamCreated');
-      this.hideForm();
-    },
-    emitUpstreamLinked() {
-      this.$emit('upstreamLinked');
+    hideFormAndEmitUpdate() {
+      this.$emit('update');
       this.hideForm();
     },
     async linkUpstream(upstreamId) {
@@ -227,7 +214,7 @@ export default {
           registryId: this.registryId,
           upstreamId,
         });
-        this.emitUpstreamLinked();
+        this.hideFormAndEmitUpdate();
         this.$toast.show(s__('VirtualRegistry|Upstream added to virtual registry successfully.'));
       } catch (error) {
         this.createUpstreamError = s__(
@@ -248,7 +235,19 @@ export default {
       this.resetUpdateActionErrorMessage();
       this.hideRegistryClearCacheModal();
       try {
-        await deleteMavenRegistryCache({ id: this.registryId });
+        if (this.deleteRegistryCacheMutation) {
+          const { data } = await this.$apollo.mutate({
+            mutation: this.deleteRegistryCacheMutation,
+            variables: {
+              id: convertToGraphQLId(this.ids.baseRegistry, this.registryId),
+            },
+          });
+          if (data.registryCacheDelete.errors.length) {
+            throw data.registryCacheDelete.errors;
+          }
+        } else {
+          await deleteMavenRegistryCache({ id: this.registryId });
+        }
         this.$toast.show(s__('VirtualRegistry|Registry cache cleared successfully.'));
       } catch (error) {
         this.updateActionErrorMessage = s__(
@@ -266,11 +265,24 @@ export default {
       this.upstreamToBeCleared = null;
     },
     async clearUpstreamCache() {
-      const id = getIdFromGraphQLId(this.upstreamToBeCleared.id);
+      const gid = this.upstreamToBeCleared.id;
+      const id = getIdFromGraphQLId(gid);
       this.resetUpdateActionErrorMessage();
       this.hideUpstreamClearCacheModal();
       try {
-        await deleteMavenUpstreamCache({ id });
+        if (this.deleteUpstreamCacheMutation) {
+          const { data } = await this.$apollo.mutate({
+            mutation: this.deleteUpstreamCacheMutation,
+            variables: {
+              id: gid,
+            },
+          });
+          if (data.cacheDelete.errors.length) {
+            throw data.cacheDelete.errors;
+          }
+        } else {
+          await deleteMavenUpstreamCache({ id });
+        }
         this.$toast.show(s__('VirtualRegistry|Upstream cache cleared successfully.'));
       } catch (error) {
         this.updateActionErrorMessage = s__(
@@ -285,7 +297,7 @@ export default {
       try {
         await removeMavenUpstreamRegistryAssociation({ id });
         this.$toast.show(s__('VirtualRegistry|Removed upstream from virtual registry.'));
-        this.$emit('upstreamRemoved');
+        this.$emit('update');
       } catch (error) {
         this.updateActionErrorMessage = s__(
           'VirtualRegistry|Failed to remove upstream. Try again.',
@@ -385,9 +397,9 @@ export default {
           :registry-upstream="registryUpstream"
           :upstreams-count="upstreamsCount"
           :index="index"
-          @reorderUpstream="reorderUpstream"
-          @clearCache="showClearUpstreamCacheModal"
-          @removeUpstream="removeUpstream"
+          @reorder-upstream="reorderUpstream"
+          @clear-cache="showClearUpstreamCacheModal"
+          @remove-upstream="removeUpstream"
         />
         <gl-modal
           v-model="registryClearCacheModalIsShown"

@@ -1,7 +1,7 @@
 import mavenRegistryUpstreamsFixture from 'test_fixtures/ee/graphql/packages_and_registries/virtual_registries/graphql/queries/get_maven_virtual_registry_upstreams.query.graphql.json';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/registry_upstream_item.vue';
+import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/common/registries/show/registry_upstream_item.vue';
 
 const { registryUpstreams } =
   mavenRegistryUpstreamsFixture.data.virtualRegistriesPackagesMavenRegistry;
@@ -36,9 +36,6 @@ describe('RegistryUpstreamItem', () => {
       provide: {
         ...defaultProvide,
         ...provide,
-      },
-      listeners: {
-        reorderUpstream: jest.fn(),
       },
       stubs: {
         GlTruncate: {
@@ -144,31 +141,31 @@ describe('RegistryUpstreamItem', () => {
       createComponent();
     });
 
-    it('emits reorderUp when reorder up button is clicked', () => {
+    it('emits `reorder-upstream.up` when reorder up button is clicked', () => {
       findReorderUpButton().vm.$emit('click');
 
-      expect(wrapper.emitted('reorderUpstream')[0]).toEqual(['up', defaultProps.registryUpstream]);
+      expect(wrapper.emitted('reorder-upstream')[0]).toEqual(['up', defaultProps.registryUpstream]);
     });
 
-    it('emits reorderDown when reorder down button is clicked', () => {
+    it('emits `reorder-upstream.down` when reorder down button is clicked', () => {
       findReorderDownButton().vm.$emit('click');
 
-      expect(wrapper.emitted('reorderUpstream')[0]).toEqual([
+      expect(wrapper.emitted('reorder-upstream')[0]).toEqual([
         'down',
         defaultProps.registryUpstream,
       ]);
     });
 
-    it('emits clearCache when clear cache button is clicked', () => {
+    it('emits `clear-cache` when clear cache button is clicked', () => {
       findClearCacheButton().vm.$emit('click');
 
-      expect(wrapper.emitted('clearCache')[0]).toEqual([defaultProps.registryUpstream.upstream]);
+      expect(wrapper.emitted('clear-cache')[0]).toEqual([defaultProps.registryUpstream.upstream]);
     });
 
-    it('emits removeUpstream when delete button is clicked', () => {
+    it('emits `remove-upstream` when delete button is clicked', () => {
       findRemoveButton().vm.$emit('click');
 
-      expect(wrapper.emitted('removeUpstream')[0]).toEqual([defaultProps.registryUpstream.id]);
+      expect(wrapper.emitted('remove-upstream')[0]).toEqual([defaultProps.registryUpstream.id]);
     });
   });
 });

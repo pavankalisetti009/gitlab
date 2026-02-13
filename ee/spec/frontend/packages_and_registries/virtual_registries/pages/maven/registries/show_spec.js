@@ -6,9 +6,9 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import MavenRegistriesDetailsApp from 'ee/packages_and_registries/virtual_registries/pages/maven/registries/show.vue';
-import MavenRegistryDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/header.vue';
-import MavenRegistryDetailsUpstreamsList from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/upstreams_list.vue';
-import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/registry_upstream_item.vue';
+import MavenRegistryDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/common/registries/show/header.vue';
+import MavenRegistryDetailsUpstreamsList from 'ee/packages_and_registries/virtual_registries/components/common/registries/show/upstreams_list.vue';
+import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/common/registries/show/registry_upstream_item.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
@@ -62,7 +62,7 @@ describe('MavenRegistryDetailsApp', () => {
 
       await waitForPromises();
 
-      await findUpstreamsList().vm.$emit('upstreamCreated');
+      await findUpstreamsList().vm.$emit('update');
 
       expect(findUpstreamsList().props('loading')).toBe(false);
     });
@@ -93,19 +93,6 @@ describe('MavenRegistryDetailsApp', () => {
     });
   });
 
-  describe('When a new upstream has been created', () => {
-    it('refetches upstreams query', async () => {
-      createComponent({
-        handlers: [[getMavenVirtualRegistryUpstreamsQuery, mavenRegistryUpstreamsHandler]],
-      });
-
-      await waitForPromises();
-      await findUpstreamsList().vm.$emit('upstreamCreated');
-
-      expect(mavenRegistryUpstreamsHandler).toHaveBeenCalledTimes(2);
-    });
-  });
-
   describe('with errors', () => {
     it('sends an error to Sentry', async () => {
       createComponent({
@@ -121,40 +108,14 @@ describe('MavenRegistryDetailsApp', () => {
     });
   });
 
-  describe('When an upstream has been reordered', () => {
+  describe('when upstreams list emits `update` event', () => {
     it('refetches upstreams query', async () => {
       createComponent({
         handlers: [[getMavenVirtualRegistryUpstreamsQuery, mavenRegistryUpstreamsHandler]],
       });
 
       await waitForPromises();
-      await findUpstreamsList().vm.$emit('upstreamReordered');
-
-      expect(mavenRegistryUpstreamsHandler).toHaveBeenCalledTimes(2);
-    });
-  });
-
-  describe('When an upstream has been removed', () => {
-    it('refetches upstreams query', async () => {
-      createComponent({
-        handlers: [[getMavenVirtualRegistryUpstreamsQuery, mavenRegistryUpstreamsHandler]],
-      });
-
-      await waitForPromises();
-      await findUpstreamsList().vm.$emit('upstreamRemoved');
-
-      expect(mavenRegistryUpstreamsHandler).toHaveBeenCalledTimes(2);
-    });
-  });
-
-  describe('When an upstream has been associated', () => {
-    it('refetches upstreams query', async () => {
-      createComponent({
-        handlers: [[getMavenVirtualRegistryUpstreamsQuery, mavenRegistryUpstreamsHandler]],
-      });
-
-      await waitForPromises();
-      await findUpstreamsList().vm.$emit('upstreamLinked');
+      await findUpstreamsList().vm.$emit('update');
 
       expect(mavenRegistryUpstreamsHandler).toHaveBeenCalledTimes(2);
     });

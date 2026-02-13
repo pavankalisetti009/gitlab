@@ -6,7 +6,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createAlert } from '~/alert';
-import UpstreamSelector from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/upstream_selector.vue';
+import UpstreamSelector from 'ee/packages_and_registries/virtual_registries/components/common/registries/show/upstream_selector.vue';
 import getUpstreamsSelectQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstreams_select.query.graphql';
 import { groupMavenUpstreamsSelect } from 'ee_jest/packages_and_registries/virtual_registries/mock_data';
 

@@ -23,6 +23,7 @@ export default {
       default: '',
     },
   },
+  emits: ['primary', 'change', 'canceled'],
   computed: {
     clearUpstreamCacheModalTitle() {
       return this.upstreamName
