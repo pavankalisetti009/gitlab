@@ -9,7 +9,7 @@ module EE
         prepended do
           before_action only: :show do
             push_frontend_feature_flag(:ui_for_virtual_registry_cleanup_policy, group)
-            push_frontend_feature_flag(:virtual_registry_cleanup_policies, group)
+            push_frontend_feature_flag(:virtual_registry_cleanup_policies, ::Feature.current_request)
           end
         end
       end
