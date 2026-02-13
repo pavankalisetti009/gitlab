@@ -199,6 +199,9 @@ export default {
           pipelineIid: this.mr.pipeline?.iid,
         };
       },
+      context: {
+        featureCategory: 'vulnerability_management',
+      },
       update({ project }) {
         // Return early if pipeline is not defined
         if (!project?.pipeline) {

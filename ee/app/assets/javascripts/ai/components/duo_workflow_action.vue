@@ -123,6 +123,9 @@ export default {
           projectPath: this.projectPath,
         };
       },
+      context: {
+        featureCategory: 'duo_agent_platform',
+      },
       skip() {
         return !this.projectPath;
       },
@@ -153,6 +156,9 @@ export default {
           projectId: this.projectGid,
           foundationalFlowReference: this.workflowDefinition,
         };
+      },
+      context: {
+        featureCategory: 'duo_agent_platform',
       },
       skip() {
         if (!this.glFeatures.dapUseFoundationalFlowsSetting) {

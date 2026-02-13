@@ -158,6 +158,9 @@ describe('ApolloUtils', () => {
         variables: {
           workflowId: mockWorkflowId,
         },
+        context: {
+          featureCategory: 'duo_agent_platform',
+        },
         fetchPolicy: 'network-only',
       });
 
@@ -177,6 +180,9 @@ describe('ApolloUtils', () => {
 
       expect(mockApolloClient.query).toHaveBeenCalledWith({
         query: getAgentFlowConfig,
+        context: {
+          featureCategory: 'duo_agent_platform',
+        },
         variables: {
           agentVersionId: mockAgentVersionId,
         },

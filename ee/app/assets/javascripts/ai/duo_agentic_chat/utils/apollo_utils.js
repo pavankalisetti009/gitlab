@@ -33,6 +33,7 @@ export const ApolloUtils = {
       mutation: duoWorkflowMutation,
       variables,
       context: {
+        featureCategory: 'duo_agent_platform',
         headers: {
           'X-GitLab-Interface': 'duo_chat',
           'X-GitLab-Client-Type': 'web_browser',
@@ -56,6 +57,9 @@ export const ApolloUtils = {
     const { data } = await apollo.mutate({
       mutation: deleteAgenticWorkflowMutation,
       variables: { input: { workflowId } },
+      context: {
+        featureCategory: 'duo_agent_platform',
+      },
     });
 
     return data?.deleteDuoWorkflowsWorkflow?.success;
@@ -65,6 +69,9 @@ export const ApolloUtils = {
     const { data } = await apollo.query({
       query: getWorkflowEventsQuery,
       variables: { workflowId },
+      context: {
+        featureCategory: 'duo_agent_platform',
+      },
       fetchPolicy: fetchPolicies.NETWORK_ONLY,
     });
 
@@ -75,6 +82,9 @@ export const ApolloUtils = {
     const { data } = await apollo.query({
       query: getAgentFlowConfig,
       variables: { agentVersionId },
+      context: {
+        featureCategory: 'duo_agent_platform',
+      },
     });
 
     return data?.aiCatalogAgentFlowConfig;
@@ -85,6 +95,9 @@ export function getCatalogAgentsQuery(queryVariables) {
   return {
     query: getConfiguredAgents,
     variables: queryVariables,
+    context: {
+      featureCategory: 'duo_agent_platform',
+    },
     update(data) {
       return (data?.aiCatalogConfiguredItems.nodes || []).map((agent) => agent.item);
     },
@@ -95,6 +108,9 @@ export function getFoundationalAgentsQuery(queryVariables) {
   return {
     query: getFoundationalChatAgents,
     variables: queryVariables,
+    context: {
+      featureCategory: 'duo_agent_platform',
+    },
     update(data) {
       return (
         data?.aiFoundationalChatAgents.nodes.map((agent) => ({
