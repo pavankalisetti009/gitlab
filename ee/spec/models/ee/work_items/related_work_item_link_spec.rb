@@ -17,7 +17,7 @@ RSpec.describe ::WorkItems::RelatedWorkItemLink, feature_category: :portfolio_ma
   end
 
   describe 'scopes' do
-    let(:epic_type) { ::WorkItems::Type.default_by_type(:epic) }
+    let(:epic_type) { build(:work_item_system_defined_type, :epic) }
 
     let_it_be(:epic_issue_link) do
       create(:work_item_link, source: create(:work_item, :epic), target: create(:work_item, :issue))
@@ -46,6 +46,33 @@ RSpec.describe ::WorkItems::RelatedWorkItemLink, feature_category: :portfolio_ma
     context 'when combining for_target_type and for_source_type' do
       it 'returns only links with the given type on the source and target' do
         expect(described_class.for_source_type(epic_type).for_target_type(epic_type)).to contain_exactly(epic_epic_link)
+      end
+    end
+
+    context 'when work_item_system_defined_type FF is disabled' do
+      let(:epic_type) { build(:work_item_type, :epic) }
+
+      before do
+        stub_feature_flags(work_item_system_defined_type: false)
+      end
+
+      context 'when filtered by source type' do
+        it 'returns only links with the given type on the source' do
+          expect(described_class.for_source_type(epic_type)).to contain_exactly(epic_issue_link, epic_epic_link)
+        end
+      end
+
+      context 'when filtered by target type' do
+        it 'returns only links with the given type on the target' do
+          expect(described_class.for_target_type(epic_type)).to contain_exactly(issue_epic_link, epic_epic_link)
+        end
+      end
+
+      context 'when combining for_target_type and for_source_type' do
+        it 'returns only links with the given type on the source and target' do
+          expect(described_class.for_source_type(epic_type).for_target_type(epic_type))
+            .to contain_exactly(epic_epic_link)
+        end
       end
     end
   end

@@ -121,8 +121,8 @@ RSpec.describe Issuables::CustomFields::UpdateService, feature_category: :team_p
   end
 
   context 'with work item types' do
-    let_it_be(:issue_type) { create(:work_item_type, :issue) }
-    let_it_be(:task_type) { create(:work_item_type, :task) }
+    let_it_be(:issue_type) { build(:work_item_system_defined_type, :issue) }
+    let_it_be(:task_type) { build(:work_item_system_defined_type, :task) }
 
     context 'when adding work item types' do
       let(:params) { { work_item_type_ids: [task_type.id, issue_type.id] } }
@@ -165,7 +165,7 @@ RSpec.describe Issuables::CustomFields::UpdateService, feature_category: :team_p
           expect(response).to be_success
           expect(updated_custom_field).to be_persisted
           expect(updated_custom_field.name).to eq('new field name')
-          expect(updated_custom_field.work_item_types).to match([
+          expect(updated_custom_field.reload.work_item_types).to match([
             have_attributes(id: issue_type.id)
           ])
         end

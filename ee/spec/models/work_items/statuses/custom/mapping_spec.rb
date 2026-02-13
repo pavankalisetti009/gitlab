@@ -7,8 +7,8 @@ RSpec.describe WorkItems::Statuses::Custom::Mapping, feature_category: :team_pla
 
   let_it_be_with_refind(:namespace) { create(:namespace) }
   let_it_be_with_refind(:other_namespace) { create(:namespace) }
-  let_it_be_with_refind(:work_item_type) { create(:work_item_type) }
-  let_it_be_with_refind(:other_work_item_type) { create(:work_item_type, :non_default) }
+  let_it_be_with_refind(:work_item_type) { build(:work_item_system_defined_type) }
+  let_it_be_with_refind(:ticket_work_item_type) { build(:work_item_system_defined_type, :ticket) }
   let_it_be_with_refind(:old_status) { create(:work_item_custom_status, namespace: namespace) }
   let_it_be_with_refind(:new_status) { create(:work_item_custom_status, namespace: namespace) }
   let_it_be_with_refind(:other_old_status) { create(:work_item_custom_status, namespace: other_namespace) }
@@ -325,7 +325,7 @@ RSpec.describe WorkItems::Statuses::Custom::Mapping, feature_category: :team_pla
         it 'is valid when mappings are for different work_item_type' do
           different_type_mapping = build(:work_item_custom_status_mapping,
             namespace: namespace,
-            work_item_type: other_work_item_type,
+            work_item_type: ticket_work_item_type,
             old_status: status_x,
             new_status: status_y,
             valid_from: 5.days.ago,
@@ -584,6 +584,12 @@ RSpec.describe WorkItems::Statuses::Custom::Mapping, feature_category: :team_pla
     end
 
     context 'when work_item_type is deleted' do
+      let(:work_item_type) { create(:work_item_type) }
+
+      before do
+        stub_feature_flags(work_item_system_defined_type: false)
+      end
+
       it 'cascades deletion of mapping' do
         expect { work_item_type.destroy! }.not_to raise_error
         expect(described_class.exists?(mapping.id)).to be false

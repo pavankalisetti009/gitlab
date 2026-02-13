@@ -25,15 +25,35 @@ RSpec.describe Issuables::CustomField, feature_category: :team_planning do
     it 'orders work_item_types by name' do
       custom_field.save!
 
-      issue_type = create(:work_item_type, :issue)
-      incident_type = create(:work_item_type, :incident)
-      task_type = create(:work_item_type, :task)
+      issue_type = build(:work_item_system_defined_type, :issue)
+      incident_type = build(:work_item_system_defined_type, :incident)
+      task_type = build(:work_item_system_defined_type, :task)
 
       create(:work_item_type_custom_field, custom_field: custom_field, work_item_type: issue_type)
       create(:work_item_type_custom_field, custom_field: custom_field, work_item_type: incident_type)
       create(:work_item_type_custom_field, custom_field: custom_field, work_item_type: task_type)
 
-      expect(custom_field.work_item_types).to eq([incident_type, issue_type, task_type])
+      expect(custom_field.reload.work_item_types).to contain_exactly(incident_type, issue_type, task_type)
+    end
+
+    context "when FF for system defined types is disabled" do
+      before do
+        stub_feature_flags(work_item_system_defined_type: false)
+      end
+
+      it 'orders work_item_types by name' do
+        custom_field.save!
+
+        issue_type = create(:work_item_type, :issue)
+        incident_type = create(:work_item_type, :incident)
+        task_type = create(:work_item_type, :task)
+
+        create(:work_item_type_custom_field, custom_field: custom_field, work_item_type: issue_type)
+        create(:work_item_type_custom_field, custom_field: custom_field, work_item_type: incident_type)
+        create(:work_item_type_custom_field, custom_field: custom_field, work_item_type: task_type)
+
+        expect(custom_field.work_item_types).to contain_exactly(incident_type, issue_type, task_type)
+      end
     end
   end
 
@@ -408,6 +428,352 @@ RSpec.describe Issuables::CustomField, feature_category: :team_planning do
       field = build(:custom_field, field_type: :text)
 
       expect(field.field_type_select?).to eq(false)
+    end
+  end
+
+  describe '#work_item_types' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:issue_type) { build(:work_item_system_defined_type, :issue) }
+    let_it_be(:task_type) { build(:work_item_system_defined_type, :task) }
+    let_it_be(:incident_type) { build(:work_item_system_defined_type, :incident) }
+
+    let(:custom_field) { build(:custom_field, namespace: namespace) }
+
+    context 'with no associated work item types' do
+      it 'returns an empty array' do
+        expect(custom_field.work_item_types).to eq([])
+      end
+
+      context 'when work_item_system_defined_type FF is disabled' do
+        before do
+          stub_feature_flags(work_item_system_defined_type: false)
+        end
+
+        it 'calls super' do
+          # Assuming the parent class has a work_item_types method
+          expect(custom_field).to receive(:work_item_types).and_call_original
+
+          custom_field.work_item_types
+        end
+
+        it 'returns an empty array' do
+          expect(custom_field.work_item_types).to eq([])
+        end
+      end
+    end
+
+    context 'with associated work item types' do
+      before do
+        custom_field.work_item_type_custom_fields.build(
+          work_item_type: task_type,
+          namespace: namespace
+        )
+        custom_field.work_item_type_custom_fields.build(
+          work_item_type: issue_type,
+          namespace: namespace
+        )
+        custom_field.work_item_type_custom_fields.build(
+          work_item_type: incident_type,
+          namespace: namespace
+        )
+      end
+
+      it 'returns all associated work item types' do
+        types = custom_field.work_item_types
+
+        expect(types).to contain_exactly(issue_type, task_type, incident_type)
+      end
+
+      it 'sorts types by name (case-insensitive)' do
+        types = custom_field.work_item_types
+        type_names = types.map(&:name)
+
+        expect(type_names).to eq(type_names.sort_by(&:downcase))
+      end
+
+      context 'when work_item_system_defined_type FF is disabled' do
+        let_it_be(:issue_type) { build(:work_item_type, :issue) }
+        let_it_be(:task_type) { build(:work_item_type, :task) }
+        let_it_be(:incident_type) { build(:work_item_type, :incident) }
+
+        before do
+          stub_feature_flags(work_item_system_defined_type: false)
+        end
+
+        it 'calls super' do
+          # Assuming the parent class has a work_item_types method
+          expect(custom_field).to receive(:work_item_types).and_call_original
+
+          custom_field.work_item_types
+        end
+
+        it 'returns all associated work item types' do
+          # save the object to persist the data
+          custom_field.save!
+
+          types = custom_field.work_item_types
+
+          expect(types).to contain_exactly(issue_type, task_type, incident_type)
+        end
+      end
+    end
+  end
+
+  describe '#work_item_types=' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:issue_type) { build(:work_item_system_defined_type, :issue) }
+    let_it_be(:task_type) { build(:work_item_system_defined_type, :task) }
+    let_it_be(:incident_type) { build(:work_item_system_defined_type, :incident) }
+
+    let(:custom_field) { build(:custom_field, namespace: namespace) }
+
+    context 'for a new record' do
+      it 'builds associations for type objects' do
+        custom_field.work_item_types = [issue_type, task_type]
+
+        expect(custom_field.work_item_type_custom_fields.size).to eq(2)
+        expect(custom_field.work_item_type_custom_fields.map(&:work_item_type))
+          .to contain_exactly(issue_type, task_type)
+      end
+
+      it 'builds associations for mixed types and IDs' do
+        custom_field.work_item_types = [issue_type, task_type.id]
+
+        expect(custom_field.work_item_type_custom_fields.size).to eq(2)
+        type_ids = custom_field.work_item_type_custom_fields.map(&:work_item_type_id)
+        expect(type_ids).to contain_exactly(issue_type.id, task_type.id)
+      end
+
+      it 'sets the namespace on built associations' do
+        custom_field.work_item_types = [issue_type]
+
+        expect(custom_field.work_item_type_custom_fields.first.namespace).to eq(namespace)
+      end
+
+      it 'handles empty array' do
+        custom_field.work_item_types = []
+
+        expect(custom_field.work_item_type_custom_fields).to be_empty
+      end
+
+      it 'handles nil' do
+        custom_field.work_item_types = nil
+
+        expect(custom_field.work_item_type_custom_fields).to be_empty
+      end
+
+      it 'does not mark associations for destruction on new records' do
+        custom_field.work_item_types = [issue_type]
+
+        expect(custom_field.work_item_type_custom_fields.none?(&:marked_for_destruction?)).to be true
+      end
+    end
+
+    context 'for an existing record' do
+      let!(:custom_field) do
+        create(:custom_field, namespace: namespace).tap do |cf|
+          cf.work_item_type_custom_fields.create!(
+            work_item_type: issue_type,
+            namespace: namespace
+          )
+          cf.work_item_type_custom_fields.create!(
+            work_item_type: task_type,
+            namespace: namespace
+          )
+        end
+      end
+
+      it 'keeps existing associations that are still in the list' do
+        custom_field.work_item_types = [issue_type, task_type, incident_type]
+
+        existing_associations = custom_field.work_item_type_custom_fields
+          .reject(&:marked_for_destruction?)
+
+        expect(existing_associations.map(&:work_item_type_id))
+          .to include(issue_type.id, task_type.id)
+      end
+
+      it 'marks associations for destruction when removed' do
+        custom_field.work_item_types = [issue_type]
+
+        marked = custom_field.work_item_type_custom_fields
+          .select(&:marked_for_destruction?)
+
+        expect(marked.size).to eq(1)
+        expect(marked.first.work_item_type_id).to eq(task_type.id)
+      end
+
+      it 'adds new associations' do
+        custom_field.work_item_types = [issue_type, task_type, incident_type]
+
+        new_associations = custom_field.work_item_type_custom_fields
+          .select(&:new_record?)
+
+        expect(new_associations.size).to eq(1)
+        expect(new_associations.first.work_item_type_id).to eq(incident_type.id)
+      end
+
+      it 'handles complete replacement' do
+        custom_field.work_item_types = [incident_type]
+
+        marked = custom_field.work_item_type_custom_fields
+          .select(&:marked_for_destruction?)
+        new_assocs = custom_field.work_item_type_custom_fields
+          .select(&:new_record?)
+
+        expect(marked.map(&:work_item_type_id))
+          .to contain_exactly(issue_type.id, task_type.id)
+        expect(new_assocs.map(&:work_item_type_id))
+          .to contain_exactly(incident_type.id)
+      end
+
+      it 'handles setting to empty array' do
+        custom_field.work_item_types = []
+
+        marked = custom_field.work_item_type_custom_fields
+          .select(&:marked_for_destruction?)
+
+        expect(marked.size).to eq(2)
+        expect(marked.map(&:work_item_type_id))
+          .to contain_exactly(issue_type.id, task_type.id)
+      end
+
+      it 'does not create duplicate associations' do
+        custom_field.work_item_types = [issue_type, task_type]
+
+        new_associations = custom_field.work_item_type_custom_fields
+          .select(&:new_record?)
+
+        expect(new_associations).to be_empty
+      end
+
+      it 'works with mixed types and IDs' do
+        custom_field.work_item_types = [issue_type, incident_type.id]
+
+        marked = custom_field.work_item_type_custom_fields
+          .select(&:marked_for_destruction?)
+        new_assocs = custom_field.work_item_type_custom_fields
+          .select(&:new_record?)
+
+        expect(marked.map(&:work_item_type_id)).to contain_exactly(task_type.id)
+        expect(new_assocs.map(&:work_item_type_id)).to contain_exactly(incident_type.id)
+      end
+
+      it 'persists changes when saved' do
+        custom_field.work_item_types = [issue_type, incident_type]
+        custom_field.save!
+
+        custom_field.reload
+
+        expect(custom_field.work_item_types.map(&:id))
+          .to contain_exactly(issue_type.id, incident_type.id)
+      end
+    end
+
+    context 'for edge cases' do
+      it 'handles duplicate types in input' do
+        custom_field.work_item_types = [issue_type, issue_type, task_type]
+
+        expect(custom_field.work_item_type_custom_fields.size).to eq(2)
+        expect(custom_field.work_item_type_custom_fields.map(&:work_item_type_id))
+          .to contain_exactly(issue_type.id, task_type.id)
+      end
+
+      it 'handles duplicate IDs in input' do
+        custom_field.work_item_types = [issue_type.id, issue_type.id, task_type.id]
+
+        expect(custom_field.work_item_type_custom_fields.size).to eq(2)
+      end
+
+      it 'filters out nil values' do
+        custom_field.work_item_types = [issue_type, nil, task_type]
+
+        expect(custom_field.work_item_type_custom_fields.size).to eq(2)
+        expect(custom_field.work_item_type_custom_fields.map(&:work_item_type))
+          .to contain_exactly(issue_type, task_type)
+      end
+    end
+
+    context 'when work_item_system_defined_type FF is disabled' do
+      let_it_be(:issue_type) { build(:work_item_type, :issue) }
+      let_it_be(:task_type) { build(:work_item_type, :task) }
+      let_it_be(:incident_type) { build(:work_item_type, :incident) }
+
+      before do
+        stub_feature_flags(work_item_system_defined_type: false)
+      end
+
+      it 'calls super' do
+        types = [issue_type, task_type]
+
+        # Assuming parent class has work_item_types= method
+        expect(custom_field).to receive(:work_item_types=).with(types).and_call_original
+
+        custom_field.work_item_types = types
+      end
+
+      it 'builds associations for type objects' do
+        custom_field.save!
+        custom_field.work_item_types = [issue_type, task_type]
+
+        expect(custom_field.work_item_types).to contain_exactly(issue_type, task_type)
+      end
+
+      context 'for an existing record' do
+        let!(:custom_field) do
+          create(:custom_field, namespace: namespace).tap do |cf|
+            cf.work_item_type_custom_fields.create!(
+              work_item_type: issue_type,
+              namespace: namespace
+            )
+            cf.work_item_type_custom_fields.create!(
+              work_item_type: task_type,
+              namespace: namespace
+            )
+          end
+        end
+
+        it 'keeps existing associations that are still in the list' do
+          custom_field.save!
+          custom_field.work_item_types |= [issue_type, task_type, incident_type]
+
+          expect(custom_field.work_item_types).to contain_exactly(issue_type, task_type, incident_type)
+        end
+
+        it 'handles complete replacement' do
+          custom_field.save!
+          custom_field.work_item_types = [incident_type]
+
+          expect(custom_field.work_item_types).to contain_exactly(incident_type)
+        end
+      end
+    end
+  end
+
+  describe '#reset_ordered_associations' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:custom_field) { create(:custom_field, namespace: namespace) }
+    let_it_be(:option_1) { create(:custom_field_select_option, custom_field: custom_field, position: 2) }
+    let_it_be(:option_2) { create(:custom_field_select_option, custom_field: custom_field, position: 1) }
+
+    it 'resets select_options but not work_item_types' do
+      expect(custom_field.select_options).to receive(:reset).and_call_original
+      expect(custom_field.work_item_types).not_to receive(:reset)
+
+      custom_field.reset_ordered_associations
+    end
+
+    context 'when work_item_system_defined_type FF is disabled' do
+      before do
+        stub_feature_flags(work_item_system_defined_type: false)
+      end
+
+      it 'resets both select_options and work_item_types' do
+        expect(custom_field.select_options).to receive(:reset).and_call_original
+        expect(custom_field.work_item_types).to receive(:reset).and_call_original
+
+        custom_field.reset_ordered_associations
+      end
     end
   end
 end

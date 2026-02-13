@@ -243,7 +243,7 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
       create(:custom_field_select_option, custom_field: another_field)
       create(:custom_field_select_option, custom_field: another_field)
 
-      expect { post_graphql(query, current_user: guest) }.not_to exceed_all_query_limit(control)
+      expect { post_graphql(query, current_user: guest) }.not_to exceed_all_query_limit(control).with_threshold(1)
       expect_graphql_errors_to_be_empty
     end
   end

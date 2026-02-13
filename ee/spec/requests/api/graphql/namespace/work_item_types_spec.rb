@@ -8,12 +8,6 @@ RSpec.describe 'getting a list of work item types for a group EE', feature_categ
   let(:parent) { namespace }
   let(:current_user) { developer }
 
-  # TODO: Remove this when we enable types provider to return System defined types
-  # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/219133
-  before do
-    stub_feature_flags(work_item_system_defined_type: false)
-  end
-
   it_behaves_like 'graphql work item type list request spec', 'with work item types request context EE'
 
   it_behaves_like 'graphql work item type list request spec EE'
@@ -116,8 +110,7 @@ RSpec.describe 'getting a list of work item types for a group EE', feature_categ
         end
         expect_graphql_errors_to_be_empty
 
-        other_type = create(:work_item_type, :non_default)
-        create(:widget_definition, widget_type: 'custom_fields', work_item_type: other_type)
+        other_type = build(:work_item_system_defined_type, :issue)
         create(:custom_field, namespace: group, work_item_types: [other_type])
 
         expect { post_graphql(query, current_user: current_user) }.not_to exceed_all_query_limit(control)
