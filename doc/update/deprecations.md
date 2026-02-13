@@ -292,6 +292,25 @@ If you currently use the bundled Spamcheck, you can deploy it separately by usin
 
 No data migration is required. Configuration guidance is available in the linked documentation.
 
+### Support for PostgreSQL 16
+
+- Announced in GitLab 18.9
+- Removal in GitLab 19.0 ([breaking change](https://docs.gitlab.com/update/terminology/#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/589774).
+
+GitLab follows an
+[annual upgrade cadence for PostgreSQL](https://handbook.gitlab.com/handbook/engineering/infrastructure-platforms/data-access/database-framework/postgresql-upgrade-cadence/).
+
+Support for PostgreSQL 16 is scheduled for removal in GitLab 19.0.
+In GitLab 19.0, PostgreSQL 17 becomes the minimum required PostgreSQL version.
+
+PostgreSQL 17 will be supported for instances that want to upgrade prior to GitLab 19.0.
+
+If you are running a single PostgreSQL instance you installed by using the Linux package, an automatic upgrade may
+be attempted with 18.11. Make sure you have enough disk space to accommodate the upgrade.
+
+For more information, see [Upgrade packaged PostgreSQL server](https://docs.gitlab.com/omnibus/settings/database/#upgrade-packaged-postgresql-server).
+
 ### Support for bundled PostgreSQL, Redis, and MinIO in GitLab Helm chart
 
 - Announced in GitLab 18.9
