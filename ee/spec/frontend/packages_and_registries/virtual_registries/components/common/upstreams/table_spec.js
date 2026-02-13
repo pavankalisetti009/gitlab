@@ -38,6 +38,10 @@ describe('Virtual registries upstreams table', () => {
   const defaultProvide = {
     editUpstreamPathTemplate: '/groups/gitlab-org/-/virtual_registries/maven/upstreams/:id/edit',
     showUpstreamPathTemplate: '/groups/gitlab-org/-/virtual_registries/maven/upstreams/:id',
+    routes: {
+      editUpstreamRouteName: 'UPSTREAM_EDIT',
+      showUpstreamRouteName: 'UPSTREAM_SHOW',
+    },
     glAbilities: {
       updateVirtualRegistry: true,
     },
@@ -110,16 +114,24 @@ describe('Virtual registries upstreams table', () => {
       ]);
     });
 
-    it('renders upstream names as links', () => {
+    it('renders upstream names as links with router navigation', () => {
       const links = findUpstreamLinks();
 
       expect(links).toHaveLength(2);
       expect(links.at(0).attributes('href')).toBe(
         '/groups/gitlab-org/-/virtual_registries/maven/upstreams/1',
       );
+      expect(links.at(0).props('to')).toEqual({
+        name: 'UPSTREAM_SHOW',
+        params: { id: 1 },
+      });
       expect(links.at(1).attributes('href')).toBe(
         '/groups/gitlab-org/-/virtual_registries/maven/upstreams/2',
       );
+      expect(links.at(1).props('to')).toEqual({
+        name: 'UPSTREAM_SHOW',
+        params: { id: 2 },
+      });
     });
 
     it('renders upstream names and URLs with truncation', () => {
@@ -154,7 +166,7 @@ describe('Virtual registries upstreams table', () => {
       expect(clearCacheButtons.at(0).text()).toBe('Clear cache');
     });
 
-    it('renders edit button link when user has permission', () => {
+    it('renders edit button link when user has permission with router navigation', () => {
       const editButtons = findEditButtons();
 
       expect(editButtons).toHaveLength(2);
@@ -163,6 +175,10 @@ describe('Virtual registries upstreams table', () => {
         category: 'tertiary',
         icon: 'pencil',
         href: '/groups/gitlab-org/-/virtual_registries/maven/upstreams/1/edit',
+      });
+      expect(editButtons.at(0).props('to')).toEqual({
+        name: 'UPSTREAM_EDIT',
+        params: { id: 1 },
       });
       expect(editButtons.at(0).attributes('aria-label')).toBe('Edit upstream Maven Central');
     });

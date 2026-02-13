@@ -96,6 +96,16 @@ export const groupMavenUpstreamsSelect = {
   },
 };
 
+export const mockContainerUpstreamResponse = {
+  __typename: 'ContainerUpstream',
+  id: 'gid://gitlab/VirtualRegistries::Container::Upstream/1',
+  name: 'Container',
+  url: 'https://gitlab.com',
+  username: '',
+  description: 'Container upstream description',
+  cacheValidityHours: 24,
+};
+
 export const groupContainerUpstreams = {
   group: {
     id: 'gid://gitlab/Group/33',

@@ -11,7 +11,7 @@ import MavenRegistryDetailsUpstreamsList from 'ee/packages_and_registries/virtua
 import AddUpstream from 'ee/packages_and_registries/virtual_registries/components/common/registries/show/add_upstream.vue';
 import LinkUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/common/registries/show/link_upstream_form.vue';
 import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/common/registries/show/registry_upstream_item.vue';
-import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/maven/shared/registry_upstream_form.vue';
+import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/form.vue';
 import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/clear_cache_modal.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 import getMavenUpstreamsCountQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstreams_count.query.graphql';
@@ -54,6 +54,7 @@ describe('MavenRegistryDetailsUpstreamsList', () => {
     ids: {
       baseRegistry: 'VirtualRegistries::Packages::Maven::Registry',
     },
+    isMavenUpstream: true,
   };
 
   const expectedCapture = (error) => {

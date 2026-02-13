@@ -5,6 +5,7 @@ import SpaRouterView from '~/vue_shared/spa/components/router_view.vue';
 import UpstreamShow from 'ee/packages_and_registries/virtual_registries/pages/common/upstream/show.vue';
 import RegistriesNewPage from '../common/registry/new.vue';
 import RegistriesEdit from '../common/registry/edit.vue';
+import UpstreamsEditPage from '../common/upstream/edit.vue';
 import RegistriesAndUpstreams from './registries_and_upstreams.vue';
 import RegistriesShow from './registries_show.vue';
 import {
@@ -12,6 +13,8 @@ import {
   CONTAINER_REGISTRIES_EDIT,
   CONTAINER_REGISTRIES_SHOW,
   CONTAINER_UPSTREAMS_INDEX,
+  CONTAINER_UPSTREAMS_EDIT,
+  CONTAINER_UPSTREAMS_SHOW,
 } from './routes';
 import { updateDocumentTitle } from './utils';
 
@@ -109,13 +112,34 @@ export default function createRouter(base) {
               {
                 path: ':id(\\d+)',
                 component: SpaRouterView,
+                meta: {
+                  useId: true,
+                  defaultRoute: CONTAINER_UPSTREAMS_SHOW,
+                },
                 children: [
                   {
-                    name: 'UPSTREAM_SHOW',
+                    name: CONTAINER_UPSTREAMS_SHOW,
                     path: '',
                     component: UpstreamShow,
                     props: true,
-                    meta: { useId: true },
+                  },
+                  {
+                    name: CONTAINER_UPSTREAMS_EDIT,
+                    path: 'edit',
+                    component: UpstreamsEditPage,
+                    props: true,
+                    meta: {
+                      text: s__('VirtualRegistries|Edit upstream'),
+                    },
+                    beforeEnter(to, from, next) {
+                      if (window.gon?.abilities?.updateVirtualRegistry) {
+                        next();
+                      } else {
+                        next({
+                          name: CONTAINER_UPSTREAMS_INDEX,
+                        });
+                      }
+                    },
                   },
                 ],
               },

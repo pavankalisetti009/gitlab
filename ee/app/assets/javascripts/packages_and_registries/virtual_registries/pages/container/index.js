@@ -10,6 +10,8 @@ import getUpstreamsCountQuery from 'ee/packages_and_registries/virtual_registrie
 import getUpstreamRegistriesQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_container_upstream_registries.query.graphql';
 import createRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/create_container_registry.mutation.graphql';
 import updateRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/update_container_registry.mutation.graphql';
+import updateUpstreamMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/update_container_upstream.mutation.graphql';
+import getUpstreamQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_container_upstream.query.graphql';
 import getUpstreamSummaryQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_container_upstream_summary.query.graphql';
 import getUpstreamCacheEntriesCountQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_container_upstream_cache_entries_count.query.graphql';
 import getUpstreamCacheEntriesQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_container_upstream_cache_entries.query.graphql';
@@ -65,6 +67,8 @@ export default () => {
       getUpstreamRegistriesQuery,
       createRegistryMutation,
       updateRegistryMutation,
+      getUpstreamQuery,
+      updateUpstreamMutation,
       getUpstreamSummaryQuery,
       getUpstreamCacheEntriesQuery,
       getUpstreamCacheEntriesCountQuery,

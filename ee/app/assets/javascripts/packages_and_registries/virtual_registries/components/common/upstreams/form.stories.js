@@ -1,9 +1,9 @@
 import showToast from '~/vue_shared/plugins/global_toast';
-import RegistryUpstreamForm from './registry_upstream_form.vue';
+import RegistryUpstreamForm from './form.vue';
 
 export default {
   component: RegistryUpstreamForm,
-  title: 'ee/virtual_registries/registry_upstream_form',
+  title: 'ee/virtual_registries/common/upstreams/form',
   argTypes: {
     createUpstream: {
       description: 'Emitted when a new upstream is created',

@@ -38,6 +38,7 @@ export default {
     editUpstreamPathTemplate: { default: '' },
     showUpstreamPathTemplate: { default: '' },
     deleteUpstreamCacheMutation: { default: null },
+    routes: { default: {} },
   },
   props: {
     upstreams: {
@@ -155,13 +156,19 @@ export default {
       );
     },
     getEditUpstreamURL(id) {
-      return this.editUpstreamPathTemplate.replace(':id', getIdFromGraphQLId(id));
+      return (
+        this.editUpstreamPathTemplate &&
+        this.editUpstreamPathTemplate.replace(':id', getIdFromGraphQLId(id))
+      );
+    },
+    getEditUpstreamRouter(id) {
+      return { name: this.routes.editUpstreamRouteName, params: { id: getIdFromGraphQLId(id) } };
     },
     getEditUpstreamLabel(name) {
       return sprintf(s__('VirtualRegistry|Edit upstream %{name}'), { name });
     },
     getShowUpstreamRouter(id) {
-      return { name: 'UPSTREAM_SHOW', params: { id: getIdFromGraphQLId(id) } };
+      return { name: this.routes.showUpstreamRouteName, params: { id: getIdFromGraphQLId(id) } };
     },
     getCacheValidityHoursLabel(cacheValidityHours) {
       return sprintf(
@@ -249,6 +256,7 @@ export default {
           icon="pencil"
           data-testid="edit-upstream-button"
           :href="getEditUpstreamURL(item.id)"
+          :to="getEditUpstreamRouter(item.id)"
         />
         <gl-disclosure-dropdown
           icon="ellipsis_v"

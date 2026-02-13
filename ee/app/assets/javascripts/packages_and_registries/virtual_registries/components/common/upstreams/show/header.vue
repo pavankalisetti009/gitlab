@@ -3,6 +3,7 @@ import { GlButton } from '@gitlab/ui';
 import { n__, s__ } from '~/locale';
 import TitleArea from '~/vue_shared/components/registry/title_area.vue';
 import MetadataItem from '~/vue_shared/components/registry/metadata_item.vue';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 
 export default {
@@ -18,6 +19,7 @@ export default {
       default: '',
     },
     i18n: { default: {} },
+    routes: { default: {} },
   },
   props: {
     upstream: {
@@ -37,7 +39,13 @@ export default {
   },
   computed: {
     canEdit() {
-      return this.glAbilities.updateVirtualRegistry && this.editUpstreamPath;
+      return this.glAbilities.updateVirtualRegistry;
+    },
+    editUpstreamRoute() {
+      return {
+        name: this.routes.editUpstreamRouteName,
+        params: { id: getIdFromGraphQLId(this.upstream.id) },
+      };
     },
     artifactsCountText() {
       if (this.loading) {
@@ -56,7 +64,7 @@ export default {
 <template>
   <title-area :title="upstream.name">
     <template v-if="canEdit" #right-actions>
-      <gl-button :href="editUpstreamPath">
+      <gl-button :href="editUpstreamPath" :to="editUpstreamRoute">
         {{ __('Edit') }}
       </gl-button>
     </template>

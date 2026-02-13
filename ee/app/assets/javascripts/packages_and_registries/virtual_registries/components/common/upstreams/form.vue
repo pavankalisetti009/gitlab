@@ -2,14 +2,14 @@
 import { GlForm, GlFormGroup, GlFormInput, GlFormTextarea, GlButton } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { isValidURL } from '~/lib/utils/url_utility';
-import TestMavenUpstreamButton from './test_maven_upstream_button.vue';
+import TestMavenUpstreamButton from 'ee/packages_and_registries/virtual_registries/components/maven/shared/test_maven_upstream_button.vue';
 
 const DEFAULT_CACHE_VALIDITY_HOURS = 24;
 const PASSWORD_PLACEHOLDER = '*****';
 const DEFAULT_MAVEN_CENTRAL_CACHE_VALIDITY_HOURS = 0;
 
 export default {
-  name: 'RegistryUpstreamForm',
+  name: 'UpstreamForm',
   components: {
     GlForm,
     GlFormGroup,
@@ -25,6 +25,8 @@ export default {
     upstreamPath: {
       default: '',
     },
+    routes: { default: {} },
+    isMavenUpstream: { default: false },
   },
   props: {
     loading: {
@@ -82,10 +84,12 @@ export default {
           typeof this.upstream.cacheValidityHours === 'number'
             ? this.upstream.cacheValidityHours
             : DEFAULT_CACHE_VALIDITY_HOURS,
-        metadataCacheValidityHours:
-          typeof this.upstream.metadataCacheValidityHours === 'number'
-            ? this.upstream.metadataCacheValidityHours
-            : DEFAULT_CACHE_VALIDITY_HOURS,
+        ...(this.isMavenUpstream && {
+          metadataCacheValidityHours:
+            typeof this.upstream.metadataCacheValidityHours === 'number'
+              ? this.upstream.metadataCacheValidityHours
+              : DEFAULT_CACHE_VALIDITY_HOURS,
+        }),
       },
       showValidation: false,
     };
@@ -254,6 +258,7 @@ export default {
       />
     </gl-form-group>
     <gl-form-group
+      v-if="isMavenUpstream"
       :label="$options.i18n.metadataCacheValidityHoursLabel"
       :label-for="$options.ids.metadataCacheValidityHoursInputId"
       :label-description="$options.i18n.cacheValidityHoursHelpText"
@@ -282,6 +287,7 @@ export default {
         </gl-button>
         <gl-button
           :href="upstreamPath"
+          :to="{ name: routes.upstreamsIndexRouteName }"
           data-testid="cancel-button"
           category="secondary"
           @click="cancel"
@@ -289,6 +295,7 @@ export default {
           {{ $options.i18n.cancelButtonLabel }}
         </gl-button>
         <test-maven-upstream-button
+          v-if="isMavenUpstream"
           :disabled="isTestUpstreamButtonDisabled"
           :upstream-id="upstream.id"
           :url="form.url"

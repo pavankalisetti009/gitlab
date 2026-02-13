@@ -22,6 +22,8 @@ module Groups
       def push_abilities
         push_frontend_ability(ability: :update_virtual_registry,
           resource: group.virtual_registry_policy_subject, user: current_user)
+        push_frontend_ability(ability: :destroy_virtual_registry,
+          resource: group.virtual_registry_policy_subject, user: current_user)
         push_frontend_ability(ability: :create_virtual_registry,
           resource: group.virtual_registry_policy_subject, user: current_user)
         push_frontend_ability(ability: :admin_virtual_registry,

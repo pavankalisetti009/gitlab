@@ -42,5 +42,6 @@ initSimpleApp('#js-vue-maven-registry-details', MavenRegistryDetailsApp, {
     getUpstreamsCountQuery,
     getUpstreamsSelectQuery,
     getUpstreamSummaryQuery,
+    isMavenUpstream: true,
   },
 });

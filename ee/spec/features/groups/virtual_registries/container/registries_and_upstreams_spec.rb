@@ -169,6 +169,28 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
           expect(page).not_to have_text(registry.name)
           expect(page).to have_current_path(/#{group_virtual_registries_container_registries_path(group)}/)
         end
+
+        context 'when visiting upstreams page' do
+          before do
+            visit group_virtual_registries_container_upstreams_path(group)
+          end
+
+          it 'renders link to edit upstream' do
+            expect(page).to have_link("Edit upstream #{upstream.name}",
+              href: edit_group_virtual_registries_container_upstream_path(group, upstream))
+          end
+        end
+
+        context 'when visiting upstreams detail page' do
+          before do
+            visit group_virtual_registries_container_upstream_path(group, upstream.id)
+          end
+
+          it 'renders link to edit upstream' do
+            expect(page).to have_link('Edit',
+              href: edit_group_virtual_registries_container_upstream_path(group, upstream))
+          end
+        end
       end
 
       it 'creates new registry', :js do

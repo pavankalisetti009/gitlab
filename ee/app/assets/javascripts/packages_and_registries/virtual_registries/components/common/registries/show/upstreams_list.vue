@@ -14,7 +14,7 @@ import {
 import createUpstreamRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/create_maven_upstream.mutation.graphql';
 import { convertToMavenRegistryGraphQLId } from 'ee/packages_and_registries/virtual_registries/utils';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
-import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/maven/shared/registry_upstream_form.vue';
+import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/form.vue';
 import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/clear_cache_modal.vue';
 import AddUpstream from './add_upstream.vue';
 import LinkUpstreamForm from './link_upstream_form.vue';

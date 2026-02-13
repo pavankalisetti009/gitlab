@@ -62,7 +62,7 @@ module VirtualRegistryHelper
   def edit_upstream_template_data(maven_upstream)
     {
       mavenCentralUrl: maven_central_url,
-      upstream: maven_upstream_attributes(maven_upstream),
+      initialUpstream: maven_upstream_attributes(maven_upstream),
       upstreamsPath: group_virtual_registries_maven_registries_and_upstreams_path(maven_upstream.group,
         { tab: 'upstreams' }),
       upstreamPath: group_virtual_registries_maven_upstream_path(maven_upstream.group, maven_upstream)
