@@ -134,6 +134,15 @@ module Resolvers
         '`advanced_vulnerability_management` feature flag enabled. ' \
         'Not supported on Instance Security Dashboard queries.'
 
+    argument :tracked_ref_ids, [::Types::GlobalIDType[::Security::ProjectTrackedContext]],
+      as: :security_project_tracked_context_id,
+      prepare: ->(ids, _) { ids.map(&:model_id) },
+      required: false,
+      experiment: { milestone: '18.10' },
+      description: 'Filter vulnerabilities by tracked ref IDs. ' \
+               'To use this argument, you must have Elasticsearch configured and the ' \
+               '`advanced_vulnerability_management` feature flag enabled.'
+
     def resolve_with_lookahead(**args)
       return Vulnerability.none unless vulnerable&.feature_available?(:security_dashboard)
 
