@@ -26,7 +26,7 @@ module Mutations
           required: true,
           description: 'Global ID of the lifecycle to attach the work item type to.'
 
-        argument :status_mappings, [Types::WorkItems::StatusMappingInputType],
+        argument :status_mappings, [::Types::WorkItems::StatusMappingInputType],
           required: false,
           description: 'Status mappings from the old lifecycle to the new lifecycle.'
 
