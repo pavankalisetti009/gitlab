@@ -22,7 +22,7 @@ module Mutations
           required: true,
           description: 'Name of the lifecycle.'
 
-        argument :statuses, [::Types::WorkItems::StatusInputType],
+        argument :statuses, [Types::WorkItems::StatusInputType],
           required: true,
           description: 'Statuses of the lifecycle. Can be existing (with id) or new (without id).'
 

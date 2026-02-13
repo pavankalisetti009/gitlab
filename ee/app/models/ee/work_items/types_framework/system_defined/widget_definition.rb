@@ -36,19 +36,7 @@ module EE
             # Return true if the widget type doesn't have a license requirement.
             return super if WIDGETS_WITH_LICENSE[widget_type].nil?
 
-            feature_available_for_resource?(resource_parent, WIDGETS_WITH_LICENSE[widget_type])
-          end
-
-          private
-
-          def feature_available_for_resource?(resource_parent, licensed_feature)
-            case resource_parent
-            when ::Organizations::Organization
-              # For organizations, check the license directly since they don't have licensed_feature_available?
-              License.feature_available?(licensed_feature)
-            else
-              resource_parent.licensed_feature_available?(licensed_feature)
-            end
+            resource_parent.licensed_feature_available?(WIDGETS_WITH_LICENSE[widget_type])
           end
         end
       end
