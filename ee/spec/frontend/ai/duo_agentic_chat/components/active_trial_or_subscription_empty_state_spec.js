@@ -6,6 +6,12 @@ import { DuoChatPredefinedPrompts } from '@gitlab/duo-ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import ActiveTrialOrSubscriptionEmptyState from 'ee/ai/duo_agentic_chat/components/active_trial_or_subscription_empty_state.vue';
+import {
+  TRACKING_EVENT_VIEW_EMPTY_STATE,
+  TRACKING_EVENT_CLICK_AGENT,
+  TRACKING_EVENT_CLICK_PROMPT,
+  TRACKING_EVENT_CLICK_EXPLORE_AGENTS,
+} from 'ee/ai/duo_agentic_chat/constants';
 
 Vue.use(Vuex);
 
@@ -121,11 +127,7 @@ describe('ActiveTrialOrSubscriptionEmptyState', () => {
       createComponent();
       const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
 
-      expect(trackEventSpy).toHaveBeenCalledWith(
-        'view_dap_trial_or_paid_empty_state',
-        {},
-        undefined,
-      );
+      expect(trackEventSpy).toHaveBeenCalledWith(TRACKING_EVENT_VIEW_EMPTY_STATE, {}, undefined);
     });
 
     it('tracks prompt click with label', () => {
@@ -137,7 +139,7 @@ describe('ActiveTrialOrSubscriptionEmptyState', () => {
       findPredefinedPrompts().vm.$emit('click', prompt);
 
       expect(trackEventSpy).toHaveBeenCalledWith(
-        'click_dap_trial_or_paid_empty_state_prompt',
+        TRACKING_EVENT_CLICK_PROMPT,
         { label: 'Prompt 1' },
         undefined,
       );
@@ -151,7 +153,7 @@ describe('ActiveTrialOrSubscriptionEmptyState', () => {
       await findAgentLinks().at(0).vm.$emit('click');
 
       expect(trackEventSpy).toHaveBeenCalledWith(
-        'click_dap_trial_or_paid_empty_state_agent',
+        TRACKING_EVENT_CLICK_AGENT,
         { label: 'Agent 1' },
         undefined,
       );
@@ -165,7 +167,7 @@ describe('ActiveTrialOrSubscriptionEmptyState', () => {
       await findExploreLink().vm.$emit('click');
 
       expect(trackEventSpy).toHaveBeenCalledWith(
-        'click_dap_trial_or_paid_empty_state_explore_agents_link',
+        TRACKING_EVENT_CLICK_EXPLORE_AGENTS,
         {},
         undefined,
       );
