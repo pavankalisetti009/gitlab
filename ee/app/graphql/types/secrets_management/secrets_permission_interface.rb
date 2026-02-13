@@ -28,10 +28,7 @@ module Types
       end
 
       def granted_by
-        BatchLoader::GraphQL.for(object.granted_by).batch do |user_ids, loader|
-          users = ::UsersFinder.new(current_user, ids: user_ids).execute
-          users.each { |user| loader.call(user.id, user) }
-        end
+        Gitlab::Graphql::Loaders::BatchModelLoader.new(User, object.granted_by).find
       end
 
       def principal

@@ -137,6 +137,19 @@ RSpec.describe 'List project secrets permissions', :gitlab_secrets_manager, feat
       end
 
       it_behaves_like 'returns secrets permissions successfully'
+
+      it 'does not load all users when resolving granted_by field' do
+        post_graphql_query
+
+        expect(response).to have_gitlab_http_status(:success)
+
+        user_queries = ActiveRecord::QueryRecorder.new { post_graphql_query }.occurrences_by_line_method
+          .select { |k, _v| k.include?('User Load') || k.include?('users') }
+
+        user_queries.each do |query_key, count|
+          expect(count).to be <= 2, "Expected limited user queries but got #{count} for: #{query_key}"
+        end
+      end
     end
 
     context 'and user is an owner' do
