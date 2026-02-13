@@ -192,6 +192,27 @@ don't need to do anything.
 If you're on GitLab Self-Managed or GitLab Dedicated, to find out if you're impacted, see
 [issue 569345](https://gitlab.com/gitlab-org/gitlab/-/work_items/569345#am-i-impacted).
 
+### Support for bundled PostgreSQL, Redis, and MinIO in GitLab Helm chart
+
+- Announced in GitLab 18.9
+- Removal in GitLab 19.0 ([breaking change](https://docs.gitlab.com/update/terminology/#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/charts/gitlab/-/issues/6271).
+
+The GitLab Helm chart bundles a Bitnami PostgreSQL, Bitnami Redis, and
+a fork of the official MinIO chart to make setting up GitLab easier. Because of several
+changes to licensing, project maintenance, and public image availability these,
+components will be removed from the GitLab Helm chart and GitLab Operator with no replacement.
+
+These charts are currently enabled by default but are explicitly documented as not
+recommended for production usage. Their sole purpose was to enable quick setup
+proof of concept and test environments.
+
+If you are running an instance with the bundled PostgreSQL, Redis, or MinIO, please
+check the [migration guide](https://docs.gitlab.com/charts/installation/migration/bundled_chart_migration/).
+
+The Redis and PostgreSQL provided by the Linux package are not impacted by this
+change.
+
 ### The `ci_job_token_scope_enabled` projects API attribute is deprecated
 
 - Announced in GitLab 16.4
