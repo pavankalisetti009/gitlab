@@ -99,5 +99,41 @@ RSpec.describe Ci::RunnerController, feature_category: :continuous_integration d
         end
       end
     end
+
+    describe '.with_instance_scope' do
+      subject(:with_instance_scope) { described_class.with_instance_scope }
+
+      context 'when no controllers have instance-level scope' do
+        it 'returns empty collection' do
+          is_expected.to be_empty
+        end
+      end
+
+      context 'when some controllers have instance-level scope' do
+        before do
+          create(:ci_runner_controller_instance_level_scoping, runner_controller: enabled_controller)
+          create(:ci_runner_controller_instance_level_scoping, runner_controller: disabled_controller)
+        end
+
+        it 'returns only controllers with instance-level scope' do
+          is_expected.to contain_exactly(enabled_controller, disabled_controller)
+        end
+      end
+
+      context 'when combined with active scope' do
+        let!(:scoped_enabled) { create(:ci_runner_controller, :enabled) }
+        let!(:scoped_disabled) { create(:ci_runner_controller, :disabled) }
+        let!(:unscoped_enabled) { create(:ci_runner_controller, :enabled) }
+
+        before do
+          create(:ci_runner_controller_instance_level_scoping, runner_controller: scoped_enabled)
+          create(:ci_runner_controller_instance_level_scoping, runner_controller: scoped_disabled)
+        end
+
+        it 'returns only active controllers with instance-level scope' do
+          expect(described_class.active.with_instance_scope).to contain_exactly(scoped_enabled)
+        end
+      end
+    end
   end
 end
