@@ -32,7 +32,7 @@ By default, the runner environment allows network access to the GitLab instance 
 though [you can change this](#change-the-default-docker-image).
 This separate environment protects from unintended consequences of running shell commands.
 
-To prevent flows from running autonomously in the GitLab UI, you can [turn off flow execution](../../gitlab_duo/turn_on_off.md).
+To prevent flows from running autonomously in the GitLab UI, you can [turn off flow execution](foundational_flows/_index.md#turn-foundational-flows-on-or-off).
 
 ## Executor architecture
 
