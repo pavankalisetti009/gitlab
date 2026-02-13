@@ -402,6 +402,82 @@ RSpec.describe '(Group|Project).aiUsage.agentPlatformSessions', :click_house, ti
       end
     end
 
+    context 'when ordering by parameterized dimension with parameters' do
+      let(:query) do
+        <<~QUERY
+          query {
+            #{query_type}(fullPath: "#{query_path}") {
+              aiUsage {
+                agentPlatformSessions(
+                  userId: [#{user1.id}]
+                  flowType: ["duo_chat"]
+                  orderBy: [
+                    { identifier: "createdEventAt", parameters: { granularity: "monthly" }, direction: DESC }
+                  ]
+                ) {
+                  nodes {
+                    dimensions {
+                      createdEventAt(granularity: "monthly")
+                    }
+                    totalCount
+                  }
+                }
+              }
+            }
+          }
+        QUERY
+      end
+
+      it 'orders results by parameterized dimension correctly' do
+        post_graphql(query, current_user: current_user)
+
+        expect(graphql_errors).to be_nil
+
+        nodes = graphql_data.dig(query_type, 'aiUsage', 'agentPlatformSessions', 'nodes')
+
+        expect(nodes[0]['dimensions']['createdEventAt']).to eq('2026-01-01')
+        expect(nodes[1]['dimensions']['createdEventAt']).to eq('2025-12-01')
+        expect(nodes[2]['dimensions']['createdEventAt']).to eq('2025-10-01')
+      end
+    end
+
+    context 'when ordering by parameterized dimension without providing parameters' do
+      let(:query) do
+        <<~QUERY
+          query {
+            #{query_type}(fullPath: "#{query_path}") {
+              aiUsage {
+                agentPlatformSessions(
+                  userId: [#{user1.id}]
+                  orderBy: [
+                    { identifier: "createdEventAt", direction: DESC }
+                  ]
+                ) {
+                  nodes {
+                    dimensions {
+                      createdEventAt(granularity: "monthly")
+                    }
+                    totalCount
+                  }
+                }
+              }
+            }
+          }
+        QUERY
+      end
+
+      it 'returns an error indicating the identifier is not available' do
+        post_graphql(query, current_user: current_user)
+
+        expect(graphql_errors).to match(
+          [hash_including('message' => "the specified identifier is not available: 'created_event_at'")]
+        )
+        nodes = graphql_data.dig(query_type, 'aiUsage', 'agentPlatformSessions', 'nodes')
+
+        expect(nodes).to be_nil
+      end
+    end
+
     context 'when query is invalid' do
       let(:query) do
         <<~QUERY
