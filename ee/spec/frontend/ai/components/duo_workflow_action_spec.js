@@ -576,9 +576,7 @@ describe('DuoWorkflowAction component', () => {
 
       describe('when request fails with a specific error message', () => {
         const apiErrorMessage =
-          'GitLab Duo Agent Platform onboarding is incomplete, composite identity must be enabled.\n' +
-          // eslint-disable-next-line no-restricted-syntax
-          '<a href="https://docs.gitlab.com/administration/gitlab_duo/configure/gitlab_self_managed/#turn-on-composite-identity">Learn more</a>';
+          'GitLab Duo Agent Platform onboarding is incomplete, composite identity must be enabled.';
 
         beforeEach(async () => {
           mock.onPost(duoWorkflowInvokePath).reply(403, { message: apiErrorMessage });

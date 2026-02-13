@@ -112,7 +112,7 @@ RSpec.describe Admin::GitlabDuoController, :cloud_licenses, feature_category: :a
             allow(License).to receive(:current).and_return(build(:license, plan: License::PREMIUM_PLAN))
           end
 
-          it_behaves_like 'renders the activation form'
+          it_behaves_like 'hides gitlab duo path'
         end
 
         context 'when the instance has a non-paid license' do

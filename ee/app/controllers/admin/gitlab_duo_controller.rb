@@ -21,6 +21,8 @@ module Admin
     private
 
     def ensure_feature_available!
+      return render_404 if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+
       render_404 unless License.current&.paid?
     end
   end

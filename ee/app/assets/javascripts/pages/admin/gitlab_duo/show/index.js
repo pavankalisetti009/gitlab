@@ -41,12 +41,8 @@ export function mountGitlabDuoHomeApp() {
     areDuoCoreFeaturesEnabled,
     duoRemoteFlowsAvailability,
     duoFoundationalFlowsAvailability,
-    duoWorkflowEnabled,
-    duoWorkflowServiceAccount,
     isSaas,
-    duoWorkflowSettingsPath,
     redirectPath,
-    duoWorkflowDisablePath,
     gitlabCreditsDashboardPath,
   } = el.dataset;
 
@@ -84,13 +80,7 @@ export function mountGitlabDuoHomeApp() {
       areDuoCoreFeaturesEnabled: parseBoolean(areDuoCoreFeaturesEnabled),
       initialDuoRemoteFlowsAvailability: parseBoolean(duoRemoteFlowsAvailability),
       initialDuoFoundationalFlowsAvailability: parseBoolean(duoFoundationalFlowsAvailability),
-      duoWorkflowEnabled: parseBoolean(duoWorkflowEnabled),
-      duoWorkflowServiceAccount: duoWorkflowServiceAccount
-        ? JSON.parse(duoWorkflowServiceAccount)
-        : undefined,
-      duoWorkflowSettingsPath,
       redirectPath,
-      duoWorkflowDisablePath,
       gitlabCreditsDashboardPath,
     },
     render: (h) => h(GitlabDuoHome),

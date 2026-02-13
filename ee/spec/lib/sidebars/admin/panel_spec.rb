@@ -99,7 +99,7 @@ RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :na
       end
 
       context 'when instance has a paid license' do
-        it_behaves_like 'shows duo settings menu'
+        it_behaves_like 'hides duo settings menu'
 
         context 'when usage_billing feature is available' do
           it_behaves_like 'shows credits dashboard menu'

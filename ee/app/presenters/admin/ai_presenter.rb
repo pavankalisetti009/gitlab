@@ -42,7 +42,6 @@ module Admin
         can_manage_instance_model_selection: can_manage_instance_model_selection?,
         direct_code_suggestions_enabled: !disabled_direct_code_suggestions?,
         duo_availability: duo_availability,
-        duo_workflow_enabled: duo_workflow_enabled?,
         enabled_expanded_logging: enabled_expanded_logging,
         experiment_features_enabled: instance_level_ai_beta_features_enabled?,
         is_bulk_add_on_assignment_enabled: true,
@@ -70,8 +69,6 @@ module Admin
         duo_configuration_path: url_helpers.admin_gitlab_duo_configuration_index_path,
         duo_seat_utilization_path: url_helpers.admin_gitlab_duo_seat_utilization_index_path,
         duo_self_hosted_path: url_helpers.admin_gitlab_duo_self_hosted_index_path,
-        duo_workflow_disable_path: url_helpers.disconnect_admin_ai_duo_workflow_settings_path,
-        duo_workflow_settings_path: url_helpers.admin_ai_duo_workflow_settings_path,
         redirect_path: url_helpers.admin_gitlab_duo_path
       }
     end
