@@ -4,24 +4,19 @@ module Security
   module BackgroundOperationTracking
     extend ActiveSupport::Concern
 
-    OPERATION_TYPE_TRANSLATION_KEYS = {
-      'attribute_update' => 'Attribute update',
-      'profile_attach' => 'Profile attach',
-      'profile_detach' => 'Profile detach'
-    }.freeze
-
     included do
       attr_reader :operation_id, :user
     end
 
     def self.humanized_operation_type(operation_type)
-      key = OPERATION_TYPE_TRANSLATION_KEYS.fetch(operation_type.to_s, nil)
-      key ? _(key) : operation_type.to_s.humanize.downcase
+      _(operation_type.to_s.humanize)
     end
 
     private
 
     def operation_exists?
+      return true unless operation_id
+
       Gitlab::BackgroundOperations::RedisStore.get_operation(operation_id).present?
     end
 

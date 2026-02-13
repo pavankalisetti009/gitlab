@@ -18,9 +18,7 @@ module Security
         return unless load_resources(group_id, scan_profile_id, current_user_id)
 
         @operation_id = operation_id
-
-        # Skip if operation was deleted (e.g., already finalized by another worker)
-        return if @operation_id && !operation_exists?
+        return unless operation_exists?
 
         result = Security::ScanProfiles::DetachService.execute(
           @group,

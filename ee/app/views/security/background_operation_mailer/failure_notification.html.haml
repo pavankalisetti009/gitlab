@@ -15,19 +15,6 @@
       - entity_label = @failed_items.first&.dig('entity_type') == 'Group' ? _('Failed Groups:') : _('Failed Projects:')
       %strong= entity_label
     - @failed_items.each do |item|
-      - if item['entity_full_path'].present?
-        - entity_url = Gitlab::Routing.url_helpers.root_url + item['entity_full_path']
-        - entity_link = link_to(item['entity_name'] || item['entity_full_path'], entity_url)
-      - else
-        - entity_type = item['entity_type'] || 'Project'
-        - entity_link = "#{entity_type} ID #{item['entity_id']}"
-      - error_messages = Array.wrap(item['error_message'])
       %p{ style: 'margin: 8px 0 8px 0;' }
-        %strong= entity_link
-        - if error_messages.size == 1
-          \-
-          = linkify_project_references(error_messages.first)
-        - else
-          %ul{ style: 'margin: 4px 0 0 16px; padding: 0; list-style-type: none' }
-            - error_messages.each do |message|
-              %li{ style: 'margin: 2px 0;' }= linkify_project_references(message)
+        %strong= entity_link_for(item)
+        = render_error_messages(item['error_message'])
