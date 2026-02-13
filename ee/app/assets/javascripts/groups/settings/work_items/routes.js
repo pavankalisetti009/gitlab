@@ -2,13 +2,23 @@ import { DEFAULT_SETTINGS_CONFIG } from 'ee/work_items/constants';
 import ChangeLifecycleSteps from './custom_status/change_lifecycle/change_lifecycle_steps.vue';
 import WorkItemSettingsHome from './work_item_settings_home.vue';
 
-export const getRoutes = (fullPath) => {
+export const getRoutes = (fullPath, isRootGroup) => {
+  const subGroupWorkItemSettingsConfig = {
+    ...DEFAULT_SETTINGS_CONFIG,
+    showWorkItemTypesSettings: true,
+    showCustomFieldsSettings: false,
+    showCustomStatusSettings: false,
+    workItemSettingsLayout: 'availability',
+  };
   return [
     {
       path: '/',
       name: 'workItemSettingsHome',
       component: WorkItemSettingsHome,
-      props: { fullPath, config: DEFAULT_SETTINGS_CONFIG },
+      props: {
+        fullPath,
+        config: isRootGroup ? DEFAULT_SETTINGS_CONFIG : subGroupWorkItemSettingsConfig,
+      },
     },
     {
       path: `/lifecycle/:workItemType`,

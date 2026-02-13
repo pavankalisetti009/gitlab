@@ -22,11 +22,14 @@ module Groups
 
       def show
         @hide_search_settings = true
+        @is_root_group = group.root?
       end
 
       private
 
       def ensure_root_group
+        return if ::Feature.enabled?(:work_item_configurable_types, group)
+
         render_404 unless group.root?
       end
 

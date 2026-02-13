@@ -489,7 +489,15 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
           stub_licensed_features(custom_fields: true, work_item_status: true)
         end
 
-        it { expect(issues_menu).not_to be_present }
+        it { expect(issues_menu).to be_present }
+
+        context 'when work_item_configurable_types FF is disabled' do
+          before do
+            stub_feature_flags(work_item_configurable_types: false)
+          end
+
+          it { expect(issues_menu).not_to be_present }
+        end
       end
 
       context 'when menu is visible' do

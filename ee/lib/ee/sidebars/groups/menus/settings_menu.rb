@@ -280,7 +280,7 @@ module EE
           end
 
           def show_group_work_items_settings_menu_item?
-            return false unless context.group.root?
+            return false if !context.group.root? && !::Feature.enabled?(:work_item_configurable_types, context.group)
 
             can_admin_custom_fields? || can_admin_work_item_statuses?
           end

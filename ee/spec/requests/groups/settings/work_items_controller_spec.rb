@@ -40,7 +40,15 @@ RSpec.describe Groups::Settings::WorkItemsController, feature_category: :team_pl
         stub_licensed_features(custom_fields: true, work_item_status: true)
       end
 
-      it_behaves_like 'unauthorized access'
+      it_behaves_like 'successful access'
+
+      context 'when work_item_configurable_types feature flag is disabled' do
+        before do
+          stub_feature_flags(work_item_configurable_types: false)
+        end
+
+        it_behaves_like 'unauthorized access'
+      end
     end
 
     context 'with root group' do

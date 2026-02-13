@@ -167,14 +167,31 @@ RSpec.describe 'Groups > Settings > Issues', :js, feature_category: :team_planni
     let(:target_group) { subgroup }
     let(:settings_path) { group_settings_issues_path(target_group) }
 
-    it_behaves_like 'prevents access'
-
-    context 'without the licensed feature' do
+    context 'when work_item_configurable_types FF is enabled' do
       before do
-        stub_licensed_features(work_item_status: false)
+        sign_in(maintainer)
+        visit settings_path
+      end
+
+      it 'does not show Edit status button for default statuses' do
+        expect(page).not_to have_button('Edit statuses')
+      end
+    end
+
+    context 'when work_item_configurable_types FF is disabled' do
+      before do
+        stub_feature_flags(work_item_configurable_types: false)
       end
 
       it_behaves_like 'prevents access'
+
+      context 'without the licensed feature' do
+        before do
+          stub_licensed_features(work_item_status: false)
+        end
+
+        it_behaves_like 'prevents access'
+      end
     end
   end
 end

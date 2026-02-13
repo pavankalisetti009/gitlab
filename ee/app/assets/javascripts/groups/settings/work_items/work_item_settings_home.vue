@@ -31,7 +31,7 @@ export default {
       required: false,
       default: () => DEFAULT_SETTINGS_CONFIG,
       validator: (config) => {
-        const validLayoutValues = ['list'];
+        const validLayoutValues = ['list', 'availability'];
 
         return (
           typeof config === 'object' &&
@@ -39,7 +39,7 @@ export default {
           typeof config.showWorkItemTypesSettings === 'boolean' &&
           typeof config.showCustomFieldsSettings === 'boolean' &&
           typeof config.showCustomStatusSettings === 'boolean' &&
-          validLayoutValues.includes(config.layout)
+          validLayoutValues.includes(config.workItemSettingsLayout)
         );
       },
     },
