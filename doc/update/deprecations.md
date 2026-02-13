@@ -271,6 +271,27 @@ don't need to do anything.
 If you're on GitLab Self-Managed or GitLab Dedicated, to find out if you're impacted, see
 [issue 569345](https://gitlab.com/gitlab-org/gitlab/-/work_items/569345#am-i-impacted).
 
+### Spamcheck support in the Linux package and GitLab Helm chart
+
+- Announced in GitLab 18.9
+- Removal in GitLab 19.0 ([breaking change](https://docs.gitlab.com/update/terminology/#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-com/Product/-/work_items/14404).
+
+In GitLab 19.0, we are removing [Spamcheck](https://docs.gitlab.com/administration/reporting/spamcheck/) from the
+Linux package and GitLab Helm chart.
+
+Spamcheck is a service to combat spam on public-facing GitLab instances. By its nature, this feature is primarily
+relevant to large public instances, which represents an edge case in our customer base.
+
+Given the low adoption and the availability of standalone deployment options, we are removing Spamcheck from the
+Linux package and GitLab Helm chart. Customers not using Spamcheck will not be impacted by this change.
+The removal will reduce package size and dependency footprint (and thus security) for the majority of customers.
+
+If you currently use the bundled Spamcheck, you can deploy it separately by using
+[Docker](https://gitlab.com/gitlab-org/gl-security/security-engineering/security-automation/spam/spamcheck).
+
+No data migration is required. Configuration guidance is available in the linked documentation.
+
 ### Support for bundled PostgreSQL, Redis, and MinIO in GitLab Helm chart
 
 - Announced in GitLab 18.9
