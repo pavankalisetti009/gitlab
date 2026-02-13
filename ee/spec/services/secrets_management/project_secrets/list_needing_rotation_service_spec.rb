@@ -22,7 +22,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListNeedingRotationService, :g
       context 'when there are no secrets' do
         it 'returns an empty array' do
           expect(result).to be_success
-          expect(result.payload[:project_secrets]).to eq([])
+          expect(result.payload[:secrets]).to eq([])
         end
       end
 
@@ -43,7 +43,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListNeedingRotationService, :g
 
         it 'returns an empty array' do
           expect(result).to be_success
-          expect(result.payload[:project_secrets]).to eq([])
+          expect(result.payload[:secrets]).to eq([])
         end
       end
 
@@ -151,7 +151,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListNeedingRotationService, :g
         it 'returns only secrets needing rotation in correct priority order' do
           expect(result).to be_success
 
-          secrets = result.payload[:project_secrets]
+          secrets = result.payload[:secrets]
 
           # Verify order: overdue secrets first (oldest first), then approaching (earliest due first)
           expect(secrets.map(&:name)).to eq([
@@ -191,7 +191,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListNeedingRotationService, :g
 
       it 'returns success' do
         expect(result).to be_success
-        expect(result.payload[:project_secrets]).to eq([])
+        expect(result.payload[:secrets]).to eq([])
       end
     end
 

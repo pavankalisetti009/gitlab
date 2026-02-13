@@ -342,7 +342,7 @@ module EE
           null: true,
           experiment: { milestone: '17.9' },
           description: 'View a specific project secret.',
-          resolver: ::Resolvers::SecretsManagement::ProjectSecretViewResolver
+          resolver: ::Resolvers::SecretsManagement::ProjectSecretResolver
 
         field :secret_permissions, ::Types::SecretsManagement::Permissions::SecretPermissionType.connection_type,
           null: true,
@@ -367,6 +367,18 @@ module EE
           experiment: { milestone: '18.7' },
           description: 'List group secrets permissions.',
           resolver: ::Resolvers::SecretsManagement::GroupSecretsPermissionsResolver
+
+        field :group_secrets, ::Types::SecretsManagement::GroupSecretType.connection_type,
+          null: true,
+          experiment: { milestone: '18.9' },
+          description: 'List group secrets.',
+          resolver: ::Resolvers::SecretsManagement::GroupSecretsResolver
+
+        field :group_secret, ::Types::SecretsManagement::GroupSecretType,
+          null: true,
+          experiment: { milestone: '18.9' },
+          description: 'View a specific group secret.',
+          resolver: ::Resolvers::SecretsManagement::GroupSecretResolver
 
         field :ai_feature_settings,
           ::Types::Ai::FeatureSettings::FeatureSettingType.connection_type,

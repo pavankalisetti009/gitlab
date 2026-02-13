@@ -8,10 +8,10 @@ module SecretsManagement
 
         return result unless result.success?
 
-        secrets = filter_secrets_needing_rotation(result.payload[:project_secrets])
+        secrets = filter_secrets_needing_rotation(result.payload[:secrets])
         secrets = order_by_rotation_urgency(secrets)
 
-        ServiceResponse.success(payload: { project_secrets: secrets })
+        ServiceResponse.success(payload: { secrets: secrets })
       end
 
       private

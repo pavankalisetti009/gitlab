@@ -2,7 +2,7 @@
 
 module Resolvers
   module SecretsManagement
-    class ProjectSecretViewResolver < BaseResolver
+    class ProjectSecretResolver < BaseResolver
       include Gitlab::Graphql::Authorize::AuthorizeResource
       include ResolvesProject
       include ::SecretsManagement::ResolverErrorHandling
