@@ -84,10 +84,18 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, :sidekiq_inline, f
     include_examples 'search results filtered by archived'
 
     context 'on self hosted' do
+      before do
+        stub_feature_flags(search_skip_related_ids: false)
+      end
+
       include_examples 'searching notable entries in merge requests'
     end
 
     context 'on SAAS', :saas do
+      before do
+        stub_feature_flags(search_skip_related_ids: false)
+      end
+
       include_examples 'searching notable entries in merge requests'
     end
   end
@@ -469,6 +477,10 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, :sidekiq_inline, f
   end
 
   describe 'query performance' do
+    before do
+      stub_feature_flags(search_skip_related_ids: false)
+    end
+
     allowed_scopes = %w[projects notes blobs wiki_blobs commits issues merge_requests epics milestones users]
     scopes_with_notes_query = %w[issues merge_requests]
 
@@ -512,6 +524,101 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, :sidekiq_inline, f
     context 'for wiki_blobs' do
       it 'has root_ancestor_ids' do
         expect(results.scope_options(:wiki_blobs)).to include :root_ancestor_ids
+      end
+    end
+  end
+
+  describe '#related_ids_for_notes' do
+    let_it_be(:top_level_group) { create(:group) }
+    let_it_be(:subgroup) { create(:group, parent: top_level_group) }
+    let_it_be(:project) { create(:project, :public, group: top_level_group) }
+    let_it_be(:issue) { create(:issue, project: project) }
+    let_it_be(:note) { create(:note, noteable: issue, project: project) }
+
+    before do
+      Elastic::ProcessBookkeepingService.track!(issue, note)
+      ensure_elasticsearch_index!
+    end
+
+    context 'when searching in a top-level namespace' do
+      let(:results) do
+        described_class.new(user, 'test', [], group: top_level_group)
+      end
+
+      context 'when search_skip_related_ids feature flag is disabled' do
+        before do
+          stub_feature_flags(search_skip_related_ids: false)
+        end
+
+        it 'calls elastic_search on Note model' do
+          expect(Note).to receive(:elastic_search).and_call_original
+
+          results.scope_options(:merge_requests)
+        end
+      end
+
+      context 'when search_skip_related_ids feature flag is enabled' do
+        before do
+          stub_feature_flags(search_skip_related_ids: top_level_group)
+        end
+
+        it 'skips related_ids query and returns empty array' do
+          expect(Note).not_to receive(:elastic_search)
+
+          result = results.send(:related_ids_for_notes, MergeRequest.name)
+
+          expect(result).to eq([])
+        end
+
+        it 'does not include related_ids in merge_requests scope options' do
+          options = results.scope_options(:merge_requests)
+
+          expect(options[:related_ids]).to eq([])
+        end
+
+        it 'does not include related_ids in work_items scope options' do
+          options = results.build_work_items_search_options('issues')
+
+          expect(options[:related_ids]).to eq([])
+        end
+      end
+    end
+
+    context 'when searching in a subgroup' do
+      let(:results) do
+        described_class.new(user, 'test', [], group: subgroup)
+      end
+
+      context 'when search_skip_related_ids feature flag is enabled for parent' do
+        before do
+          stub_feature_flags(search_skip_related_ids: top_level_group)
+        end
+
+        it 'skips related_ids query when flag is enabled for root ancestor' do
+          expect(Note).not_to receive(:elastic_search)
+
+          result = results.send(:related_ids_for_notes, MergeRequest.name)
+
+          expect(result).to eq([])
+        end
+
+        it 'does not include related_ids in merge_requests scope options' do
+          options = results.scope_options(:merge_requests)
+
+          expect(options[:related_ids]).to eq([])
+        end
+      end
+
+      context 'when search_skip_related_ids feature flag is disabled' do
+        before do
+          stub_feature_flags(search_skip_related_ids: false)
+        end
+
+        it 'calls elastic_search on Note model' do
+          expect(Note).to receive(:elastic_search).and_call_original
+
+          results.scope_options(:merge_requests)
+        end
       end
     end
   end

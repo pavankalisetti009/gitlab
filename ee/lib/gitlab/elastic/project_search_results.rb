@@ -126,6 +126,11 @@ module Gitlab
           related_ids: related_ids_for_notes(Issue.name)
         )
       end
+
+      override :root_namespace_for_feature_flag
+      def root_namespace_for_feature_flag
+        project.root_ancestor
+      end
     end
   end
 end
