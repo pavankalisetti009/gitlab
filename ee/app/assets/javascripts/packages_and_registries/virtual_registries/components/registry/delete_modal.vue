@@ -90,6 +90,7 @@ export default {
     visible
     modal-id="destroy-registry-modal"
     size="sm"
+    modal-class="gl-break-words"
     :action-primary="modalPrimaryAction"
     :action-cancel="$options.modal.cancelAction"
     :title="s__('VirtualRegistry|Delete registry')"
@@ -98,9 +99,9 @@ export default {
   >
     <template v-if="registry">
       <gl-sprintf :message="s__('VirtualRegistry|Are you sure you want to delete %{name}?')">
-        <template #name>
-          {{ registry.name }}
-        </template>
+        <template #name
+          ><strong>{{ registry.name }}</strong></template
+        >
       </gl-sprintf>
     </template>
   </gl-modal>

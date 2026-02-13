@@ -200,7 +200,7 @@ RSpec.describe 'Container virtual registries and upstreams', :aggregate_failures
           click_button 'Delete upstream'
 
           within_modal do
-            click_button 'Delete upstream'
+            click_button 'Delete'
           end
 
           expect(page).not_to have_text(upstream.name)

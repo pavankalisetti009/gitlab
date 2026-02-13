@@ -103,7 +103,7 @@ export default {
     },
     modalPrimaryAction() {
       return {
-        text: s__('VirtualRegistry|Delete upstream'),
+        text: __('Delete'),
         attributes: {
           disabled: this.loading,
           variant: 'danger',
@@ -147,9 +147,10 @@ export default {
     :visible="visible"
     modal-id="delete-upstream-modal"
     size="md"
+    modal-class="gl-break-words"
     :action-primary="modalPrimaryAction"
     :action-cancel="$options.modal.cancelAction"
-    :title="s__('VirtualRegistry|Delete upstream?')"
+    :title="s__('VirtualRegistry|Delete upstream')"
     @primary="deleteUpstream"
     @canceled="$emit('canceled')"
     @change="$emit('change', $event)"
@@ -159,7 +160,9 @@ export default {
       <p class="gl-font-bold">{{ message }}</p>
       <gl-truncate-text class="gl-pb-3">
         <ul class="gl-pl-6">
-          <li v-for="registry in registries" :key="registry.id">{{ registry.name }}</li>
+          <li v-for="registry in registries" :key="registry.id">
+            {{ registry.name }}
+          </li>
         </ul>
       </gl-truncate-text>
       <p>

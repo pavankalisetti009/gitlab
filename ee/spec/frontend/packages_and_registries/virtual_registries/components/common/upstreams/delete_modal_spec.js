@@ -91,7 +91,7 @@ describe('DeleteUpstreamWithModal', () => {
         modalId: 'delete-upstream-modal',
         size: 'md',
         actionPrimary: {
-          text: 'Delete upstream',
+          text: 'Delete',
           attributes: {
             variant: 'danger',
             category: 'primary',
@@ -101,7 +101,7 @@ describe('DeleteUpstreamWithModal', () => {
           text: 'Cancel',
         },
       });
-      expect(modal.attributes('title')).toBe('Delete upstream?');
+      expect(modal.attributes('title')).toBe('Delete upstream');
     });
 
     it('initially has modal closed', () => {

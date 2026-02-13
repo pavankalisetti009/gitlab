@@ -92,7 +92,7 @@ export default {
     <template #cell(name)="{ item }">
       <gl-link
         :href="getShowRegistryURL(item.id)"
-        class="gl-font-bold gl-leading-24 gl-text-default"
+        class="gl-break-words gl-font-bold gl-leading-24 gl-text-default"
         data-testid="registry-name"
       >
         {{ item.name }}

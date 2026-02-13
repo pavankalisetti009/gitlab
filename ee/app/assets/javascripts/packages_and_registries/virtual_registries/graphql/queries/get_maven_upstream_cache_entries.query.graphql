@@ -16,6 +16,7 @@ query getMavenUpstreamCacheEntries(
         contentType
         relativePath
         size
+        downloadsCount
         upstreamCheckedAt
       }
       pageInfo {
