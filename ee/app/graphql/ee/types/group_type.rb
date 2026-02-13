@@ -436,7 +436,7 @@ module EE
           ::Types::VirtualRegistries::Container::RegistryType.connection_type,
           null: true,
           description: 'Container virtual registries registered to the group. ' \
-            'Returns null if the `container_virtual_registry` feature flag is disabled.',
+            'Returns null if the `container_virtual_registries` feature flag is disabled.',
           experiment: { milestone: '18.7' }
 
         field :virtual_registries_setting,
@@ -506,7 +506,7 @@ module EE
           null: true,
           skip_type_authorization: :read_virtual_registry,
           description: 'Container upstreams registered to the group. ' \
-            'Returns null if the `container_virtual_registry` feature flag is disabled.',
+            'Returns null if the `container_virtual_registries` feature flag is disabled.',
           resolver: ::Resolvers::VirtualRegistries::Container::UpstreamsResolver,
           experiment: { milestone: '18.7' }
 

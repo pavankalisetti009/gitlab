@@ -481,7 +481,7 @@ module EE
           ::Types::VirtualRegistries::Container::UpstreamDetailsType,
           null: true,
           description: 'Finds a container upstream registry with details. ' \
-            'Returns `null` if the `container_virtual_registry` feature flag is disabled.',
+            'Returns `null` if the `container_virtual_registries` feature flag is disabled.',
           experiment: { milestone: '18.7' } do
             argument :id,
               type: ::Types::GlobalIDType[::VirtualRegistries::Container::Upstream],

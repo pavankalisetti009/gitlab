@@ -2177,7 +2177,7 @@ Returns [`ContainerRegistryDetails`](#containerregistrydetails).
 **Status**: Experiment.
 {{< /details >}}
 
-Finds a container upstream registry with details. Returns `null` if the `container_virtual_registry` feature flag is disabled.
+Finds a container upstream registry with details. Returns `null` if the `container_virtual_registries` feature flag is disabled.
 
 Returns [`ContainerUpstreamDetails`](#containerupstreamdetails).
 
@@ -34723,7 +34723,7 @@ GPG signature for a signed commit.
 | <a id="groupuserpermissions"></a>`userPermissions` | [`GroupPermissions!`](#grouppermissions) | Permissions for the current user on the resource. |
 | <a id="groupvaluestreamanalytics"></a>`valueStreamAnalytics` | [`ValueStreamAnalytics`](#valuestreamanalytics) | Information about Value Stream Analytics within the group. |
 | <a id="groupvirtualregistriescleanuppolicy"></a>`virtualRegistriesCleanupPolicy` {{< icon name="warning-solid" >}} | [`VirtualRegistryCleanupPolicy`](#virtualregistrycleanuppolicy) | **Introduced** in GitLab 18.7. **Status**: Experiment. Virtual registries cleanup policy of the group. Returns null if the `maven_virtual_registry` or `virtual_registry_cleanup_policies`feature flag is disabled. |
-| <a id="groupvirtualregistriescontainerregistries"></a>`virtualRegistriesContainerRegistries` {{< icon name="warning-solid" >}} | [`ContainerRegistryConnection`](#containerregistryconnection) | **Introduced** in GitLab 18.7. **Status**: Experiment. Container virtual registries registered to the group. Returns null if the `container_virtual_registry` feature flag is disabled. |
+| <a id="groupvirtualregistriescontainerregistries"></a>`virtualRegistriesContainerRegistries` {{< icon name="warning-solid" >}} | [`ContainerRegistryConnection`](#containerregistryconnection) | **Introduced** in GitLab 18.7. **Status**: Experiment. Container virtual registries registered to the group. Returns null if the `container_virtual_registries` feature flag is disabled. |
 | <a id="groupvirtualregistriespackagesmavenregistries"></a>`virtualRegistriesPackagesMavenRegistries` {{< icon name="warning-solid" >}} | [`MavenRegistryConnection`](#mavenregistryconnection) | **Introduced** in GitLab 18.6. **Status**: Experiment. Maven virtual registries registered to the group. Returns null if the `maven_virtual_registry` feature flag is disabled. |
 | <a id="groupvirtualregistriessetting"></a>`virtualRegistriesSetting` {{< icon name="warning-solid" >}} | [`VirtualRegistriesSetting`](#virtualregistriessetting) | **Introduced** in GitLab 18.5. **Status**: Experiment. Virtual registries settings for the group. Returns null if the `maven_virtual_registry` feature flag is disabled. |
 | <a id="groupvisibility"></a>`visibility` | [`String`](#string) | Visibility of the namespace. |
@@ -36339,7 +36339,7 @@ four standard [pagination arguments](#pagination-arguments):
 **Status**: Experiment.
 {{< /details >}}
 
-Container upstreams registered to the group. Returns null if the `container_virtual_registry` feature flag is disabled.
+Container upstreams registered to the group. Returns null if the `container_virtual_registries` feature flag is disabled.
 
 Returns [`ContainerUpstreamConnection`](#containerupstreamconnection).
 
