@@ -1684,6 +1684,124 @@ RSpec.describe License, feature_category: :plan_provisioning do
     end
   end
 
+  describe '.previous_non_trial_license' do
+    context 'when the current license is not a trial' do
+      before do
+        create(:license, plan: License::PREMIUM_PLAN)
+        described_class.reset_current
+      end
+
+      it 'returns nil' do
+        expect(described_class.previous_non_trial_license).to be_nil
+      end
+    end
+
+    context 'when the current license is a trial' do
+      context 'when prior licenses exist' do
+        context 'when prior license is not a trial' do
+          let!(:prior_license) { create(:license, plan: License::PREMIUM_PLAN) }
+
+          before do
+            create(:license, :ultimate_trial)
+            described_class.reset_current
+          end
+
+          it 'returns the prior non-trial license' do
+            expect(described_class.previous_non_trial_license).to eq(prior_license)
+          end
+        end
+
+        context 'when prior license is a trial' do
+          let!(:prior_trial) { create(:license, :ultimate_trial) }
+
+          before do
+            create(:license, :ultimate_trial)
+            described_class.reset_current
+          end
+
+          it 'does not return a trial license' do
+            expect(described_class.previous_non_trial_license).not_to eq(prior_trial)
+          end
+        end
+
+        context 'when prior license is expired' do
+          let!(:prior_license) { create(:license, plan: License::PREMIUM_PLAN, expired: true) }
+
+          before do
+            create(:license, :ultimate_trial)
+            described_class.reset_current
+          end
+
+          it 'does not return an expired license' do
+            expect(described_class.previous_non_trial_license).not_to eq(prior_license)
+          end
+        end
+      end
+
+      context 'when no prior licenses exist' do
+        before do
+          allow(described_class).to receive(:current).and_return(create(:license, :ultimate_trial))
+          allow(described_class).to receive(:recent).and_return(described_class.none)
+        end
+
+        it 'returns nil' do
+          expect(described_class.previous_non_trial_license).to be_nil
+        end
+      end
+    end
+  end
+
+  describe '.billable?' do
+    context 'when the current license is not a trial' do
+      before do
+        create(:license, plan: License::PREMIUM_PLAN)
+        described_class.reset_current
+      end
+
+      it 'returns true' do
+        expect(described_class.billable?).to be true
+      end
+    end
+
+    context 'when the current license is a trial' do
+      context 'when prior licenses exist' do
+        context 'when prior license is not a trial' do
+          before do
+            create(:license, plan: License::PREMIUM_PLAN)
+            create(:license, :ultimate_trial)
+            described_class.reset_current
+          end
+
+          it 'returns true' do
+            expect(described_class.billable?).to be true
+          end
+        end
+
+        context 'when prior license is a trial' do
+          before do
+            allow(described_class).to receive(:current).and_return(create(:license, :ultimate_trial))
+            allow(described_class).to receive(:recent).and_return(described_class.none)
+          end
+
+          it 'returns false' do
+            expect(described_class.billable?).to be false
+          end
+        end
+      end
+
+      context 'when no prior licenses exist' do
+        before do
+          allow(described_class).to receive(:current).and_return(create(:license, :ultimate_trial))
+          allow(described_class).to receive(:recent).and_return(described_class.none)
+        end
+
+        it 'returns false' do
+          expect(described_class.billable?).to be false
+        end
+      end
+    end
+  end
+
   describe '#edition' do
     let(:ultimate) { build(:license, plan: 'ultimate') }
     let(:premium) { build(:license, plan: 'premium') }

@@ -124,6 +124,19 @@ class License < ApplicationRecord
       decryptable_licenses.sort_by { |license| [license.starts_at, license.created_at, license.expires_at] }.reverse
     end
 
+    def previous_non_trial_license
+      return unless current.trial?
+
+      recent.where(id: ...current.id).detect { |license| !license.trial? && !license.expired? }
+    end
+
+    def billable?
+      license_to_check = current.trial? ? previous_non_trial_license : current
+      return false unless license_to_check
+
+      license_to_check.paid?
+    end
+
     def with_valid_license
       current_license = License.current
 

@@ -9,6 +9,6 @@
 #js-instance-usage-billing-dashboard{ data: {
   user_usage_path: admin_gitlab_credits_dashboard_user_path('__USERNAME__'),
   is_saas: ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions).to_s,
-  is_free: !License.current.paid?.to_s,
+  is_free: (!License.billable?).to_s,
   **trial_data
 } }
