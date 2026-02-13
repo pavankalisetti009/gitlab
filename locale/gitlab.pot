@@ -75427,6 +75427,9 @@ msgstr ""
 msgid "VirtualRegistries|Edit registry"
 msgstr ""
 
+msgid "VirtualRegistries|Edit upstream"
+msgstr ""
+
 msgid "VirtualRegistries|New registry"
 msgstr ""
 
@@ -76009,6 +76012,12 @@ msgid "VirtualRegistry|URL"
 msgstr ""
 
 msgid "VirtualRegistry|Upstream"
+msgstr ""
+
+msgid "VirtualRegistry|Upstream %{name} was successfully deleted."
+msgstr ""
+
+msgid "VirtualRegistry|Upstream %{name} was successfully updated."
 msgstr ""
 
 msgid "VirtualRegistry|Upstream URL"

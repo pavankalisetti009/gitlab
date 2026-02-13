@@ -1,9 +1,9 @@
 import { GlForm, GlFormGroup } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/maven/shared/registry_upstream_form.vue';
+import UpstreamForm from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/form.vue';
 import TestMavenUpstreamButton from 'ee/packages_and_registries/virtual_registries/components/maven/shared/test_maven_upstream_button.vue';
 
-describe('RegistryUpstreamForm', () => {
+describe('UpstreamForm', () => {
   let wrapper;
 
   const upstream = {
@@ -18,10 +18,11 @@ describe('RegistryUpstreamForm', () => {
 
   const defaultProvide = {
     mavenCentralUrl: 'https://repo1.maven.org/maven2',
+    isMavenUpstream: true,
   };
 
   const createComponent = ({ props = {}, provide = {}, stubs = {} } = {}) => {
-    wrapper = shallowMountExtended(RegistryUpstreamForm, {
+    wrapper = shallowMountExtended(UpstreamForm, {
       propsData: props,
       provide: {
         ...defaultProvide,
@@ -81,8 +82,17 @@ describe('RegistryUpstreamForm', () => {
         expect(findCacheValidityHoursInput().props('value')).toBe(24);
       });
 
-      it('renders Metadata cache validity hours input', () => {
+      it('renders Metadata cache validity hours input when isMavenUpstream is true', () => {
         expect(findMetadataCacheValidityHoursInput().props('value')).toBe(24);
+      });
+
+      it('does not render Metadata cache validity hours input when isMavenUpstream is false', () => {
+        createComponent({
+          provide: {
+            isMavenUpstream: false,
+          },
+        });
+        expect(findMetadataCacheValidityHoursInput().exists()).toBe(false);
       });
 
       describe('when URL field is set to maven central', () => {
@@ -213,6 +223,32 @@ describe('RegistryUpstreamForm', () => {
       );
     });
 
+    it('emits submit event without metadataCacheValidityHours when isMavenUpstream is false', () => {
+      createComponent({
+        props: { upstream },
+        provide: {
+          isMavenUpstream: false,
+        },
+      });
+
+      findForm().vm.$emit('submit', { preventDefault: () => {} });
+
+      const submittedEvent = wrapper.emitted('submit');
+      const [eventParams] = submittedEvent[0];
+
+      expect(Boolean(submittedEvent)).toBe(true);
+      expect(eventParams).toEqual(
+        expect.objectContaining({
+          name: 'foo',
+          url: 'https://example.com',
+          description: 'bar',
+          username: 'bax',
+          cacheValidityHours: 48,
+        }),
+      );
+      expect(eventParams.metadataCacheValidityHours).toBeUndefined();
+    });
+
     it('emits submit event with cacheValidityHours set to 0 when URL is maven central', () => {
       createComponent({ props: { upstream } });
 
@@ -254,7 +290,7 @@ describe('RegistryUpstreamForm', () => {
   });
 
   describe('test upstream button', () => {
-    it('renders Test upstream button component', () => {
+    it('renders Test upstream button component when isMavenUpstream is true', () => {
       expect(findTestUpstreamButton().props()).toStrictEqual({
         disabled: true,
         upstreamId: null,
@@ -262,6 +298,15 @@ describe('RegistryUpstreamForm', () => {
         username: '',
         password: '',
       });
+    });
+
+    it('does not render Test upstream button component when isMavenUpstream is false', () => {
+      createComponent({
+        provide: {
+          isMavenUpstream: false,
+        },
+      });
+      expect(findTestUpstreamButton().exists()).toBe(false);
     });
 
     it('enables button if valid URL is provided', async () => {

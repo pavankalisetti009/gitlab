@@ -12,6 +12,12 @@ describe('UpstreamDetailsHeader', () => {
     upstream: mockUpstream,
   };
 
+  const defaultProvide = {
+    routes: {
+      editUpstreamRouteName: 'UPSTREAM_EDIT',
+    },
+  };
+
   const findEditButton = () => wrapper.findComponent(GlButton);
   const findTitleArea = () => wrapper.findComponent(TitleArea);
   const findAllMetadataItems = () => wrapper.findAllComponents(MetadataItem);
@@ -25,6 +31,7 @@ describe('UpstreamDetailsHeader', () => {
         ...props,
       },
       provide: {
+        ...defaultProvide,
         ...provide,
         i18n: {
           registryType: 'Maven',
@@ -70,9 +77,13 @@ describe('UpstreamDetailsHeader', () => {
       });
     });
 
-    it('renders Edit button', () => {
+    it('renders Edit button with href and router link', () => {
       expect(findEditButton().text()).toBe('Edit');
       expect(findEditButton().props('href')).toBe('upstream_path');
+      expect(findEditButton().props('to')).toEqual({
+        name: 'UPSTREAM_EDIT',
+        params: { id: mockUpstream.id },
+      });
     });
   });
 
