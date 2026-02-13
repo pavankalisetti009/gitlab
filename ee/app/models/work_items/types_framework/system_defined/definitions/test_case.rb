@@ -32,6 +32,10 @@ module WorkItems
                 icon_name: "work-item-test-case"
               }
             end
+
+            def filterable?
+              true
+            end
           end
         end
       end
