@@ -11,7 +11,7 @@ import {
 } from '@gitlab/ui';
 import { s__, n__, sprintf } from '~/locale';
 import { deleteMavenUpstreamCache } from 'ee/api/virtual_registries_api';
-import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/upstream_clear_cache_modal.vue';
+import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/clear_cache_modal.vue';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
@@ -129,12 +129,15 @@ export default {
       this.hideUpstreamClearCacheModal();
       try {
         if (this.deleteUpstreamCacheMutation) {
-          await this.$apollo.mutate({
+          const { data } = await this.$apollo.mutate({
             mutation: this.deleteUpstreamCacheMutation,
             variables: {
               id,
             },
           });
+          if (data.cacheDelete.errors.length) {
+            throw data.cacheDelete.errors;
+          }
         } else {
           await deleteMavenUpstreamCache({ id: getIdFromGraphQLId(id) });
         }

@@ -34,21 +34,21 @@ export default {
   },
   /**
    * Emitted when an upstream is reordered
-   * @event reorderUpstream
+   * @event reorder-upstream
    * @property {string} direction - The direction to move the upstream ('up' or 'down')
    * @property {string} registryUpstream - The registryUpstream item to reorder
    */
   /**
    * Emitted when the cache is cleared
-   * @event clearCache
+   * @event clear-cache
    * @property {string} upstream - The upstream to clear the cache
    */
   /**
    * Emitted when the upstream is removed
-   * @event removeUpstream
+   * @event remove-upstream
    * @property {string} upstreamId - ID of the registry upstream association
    */
-  emits: ['reorderUpstream', 'clearCache', 'removeUpstream'],
+  emits: ['reorder-upstream', 'clear-cache', 'remove-upstream'],
   computed: {
     upstream() {
       return this.registryUpstream.upstream;
@@ -118,14 +118,14 @@ export default {
   },
   methods: {
     reorderUpstream(direction) {
-      this.$emit('reorderUpstream', direction, this.registryUpstream);
+      this.$emit('reorder-upstream', direction, this.registryUpstream);
     },
     clearCache() {
-      this.$emit('clearCache', this.upstream);
+      this.$emit('clear-cache', this.upstream);
     },
     removeUpstream() {
       const { id } = this.registryUpstream;
-      this.$emit('removeUpstream', id);
+      this.$emit('remove-upstream', id);
     },
   },
   i18n: {

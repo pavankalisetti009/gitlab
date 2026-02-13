@@ -11,7 +11,7 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import MavenUpstreamsTable from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/table.vue';
-import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/upstream_clear_cache_modal.vue';
+import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/clear_cache_modal.vue';
 import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/common/upstreams/delete_modal.vue';
 import deleteUpstreamCacheMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/delete_container_upstream_cache.mutation.graphql';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
@@ -387,7 +387,28 @@ describe('Virtual registries upstreams table', () => {
       });
 
       describe('when API fails', () => {
-        it('shows error message', async () => {
+        it('with mutation error shows error message', async () => {
+          createComponent({
+            provide: { deleteUpstreamCacheMutation },
+            deleteCacheHandler: jest.fn().mockResolvedValue({
+              data: { cacheDelete: { errors: ['error'] } },
+            }),
+          });
+
+          await findClearCacheButtons().at(0).vm.$emit('click');
+          await findUpstreamClearCacheModal().vm.$emit('primary');
+
+          await waitForPromises();
+
+          expect(findUpstreamClearCacheModal().props('visible')).toBe(false);
+          expect(showToastSpy).toHaveBeenCalledWith('Failed to clear upstream cache. Try again.');
+          expect(captureException).toHaveBeenCalledWith({
+            error: ['error'],
+            component: 'UpstreamsTable',
+          });
+        });
+
+        it('with server error shows error message', async () => {
           const mockError = new Error('API Error');
 
           createComponent({

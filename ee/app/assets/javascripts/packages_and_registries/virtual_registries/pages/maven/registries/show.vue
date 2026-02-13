@@ -1,6 +1,6 @@
 <script>
-import MavenRegistryDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/header.vue';
-import UpstreamsList from 'ee/packages_and_registries/virtual_registries/components/maven/registries/show/upstreams_list.vue';
+import MavenRegistryDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/common/registries/show/header.vue';
+import UpstreamsList from 'ee/packages_and_registries/virtual_registries/components/common/registries/show/upstreams_list.vue';
 import getMavenVirtualRegistryUpstreams from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_virtual_registry_upstreams.query.graphql';
 import { convertToMavenRegistryGraphQLId } from 'ee/packages_and_registries/virtual_registries/utils';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
@@ -64,10 +64,7 @@ export default {
       :loading="isFirstTimeLoading"
       :registry-id="registry.id"
       :registry-upstreams="registryUpstreams"
-      @upstreamCreated="refetchMavenVirtualRegistryQuery"
-      @upstreamLinked="refetchMavenVirtualRegistryQuery"
-      @upstreamReordered="refetchMavenVirtualRegistryQuery"
-      @upstreamRemoved="refetchMavenVirtualRegistryQuery"
+      @update="refetchMavenVirtualRegistryQuery"
     />
   </div>
 </template>

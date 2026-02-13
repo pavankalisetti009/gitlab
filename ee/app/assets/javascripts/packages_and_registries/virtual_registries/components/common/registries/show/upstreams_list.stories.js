@@ -3,7 +3,7 @@ import UpstreamsList from './upstreams_list.vue';
 
 export default {
   component: UpstreamsList,
-  title: 'ee/virtual_registries/registry_upstreams_list',
+  title: 'ee/virtual_registries/upstreams_list',
   argTypes: {
     reorderUpstream: {
       description: 'Emitted when an upstream is reordered',
