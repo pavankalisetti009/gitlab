@@ -3,9 +3,11 @@ import VueApollo from 'vue-apollo';
 import { GlButton, GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
+import { TEST_HOST } from 'helpers/test_constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import SmartInterval from '~/smart_interval';
+import { visitUrl } from '~/lib/utils/url_utility';
 import StatusIcon from '~/vue_merge_request_widget/components/widget/status_icon.vue';
 import HelpPopover from '~/vue_shared/components/help_popover.vue';
 import SecurityFindingsPage from 'ee/merge_requests/reports/pages/security_findings_page.vue';
@@ -24,6 +26,10 @@ import {
 } from 'ee_jest/vue_merge_request_widget/mock_data';
 
 jest.mock('~/smart_interval');
+jest.mock('~/lib/utils/url_utility', () => ({
+  ...jest.requireActual('~/lib/utils/url_utility'),
+  visitUrl: jest.fn(),
+}));
 
 Vue.use(VueApollo);
 
@@ -764,6 +770,23 @@ describe('Security findings page component', () => {
         await nextTick();
 
         expect(finding.state).toBe('detected');
+      });
+    });
+
+    describe('resolve with AI', () => {
+      const aiCommentUrl = `${TEST_HOST}/project/merge_requests/2#note_1`;
+
+      it('redirects to comment URL and closes modal when resolveWithAiSuccess is emitted', async () => {
+        await openModalWithFinding(createFinding());
+
+        expect(visitUrl).not.toHaveBeenCalled();
+        expect(findVulnerabilityFindingModal().exists()).toBe(true);
+
+        findVulnerabilityFindingModal().vm.$emit('resolveWithAiSuccess', aiCommentUrl);
+        await nextTick();
+
+        expect(visitUrl).toHaveBeenCalledWith(aiCommentUrl);
+        expect(findVulnerabilityFindingModal().exists()).toBe(false);
       });
     });
   });
