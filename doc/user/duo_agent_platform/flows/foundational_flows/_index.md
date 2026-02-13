@@ -70,6 +70,9 @@ You can turn foundational flows on or off for a top-level group (namespace) or a
 If you turn off foundational flows for a top-level group, users with that group as
 their default GitLab Duo namespace cannot access foundational flows in any namespace.
 
+You can also turn flow execution on or off to control whether agents run in the GitLab UI.
+When this setting is turned on, agents execute in CI/CD pipelines and consume compute minutes.
+
 {{< tabs >}}
 
 {{< tab title="For GitLab.com" >}}
