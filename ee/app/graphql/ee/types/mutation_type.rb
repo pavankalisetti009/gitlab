@@ -404,6 +404,7 @@ module EE
         mount_mutation ::Mutations::VirtualRegistries::Cleanup::Policy::Upsert, experiment: { milestone: '18.7' }
         mount_mutation ::Mutations::VirtualRegistries::Container::Upstream::Update,
           experiment: { milestone: '18.8' }
+        mount_mutation ::Mutations::WorkItems::Types::Update, experiment: { milestone: '18.9' }
 
         prepend(Types::DeprecatedMutations)
       end
