@@ -242,6 +242,8 @@ To change GitLab Duo availability for the instance:
    It can take a few minutes for these settings to propagate across groups.
 1. Use the **Allow flow execution** toggle to control whether agents can run in the GitLab UI.
    When turned on, agents execute in CI/CD pipelines and consume compute minutes.
+1. To configure a custom container registry for foundational flow images, enter the registry URL in the
+   **Image registry** field. If left blank, `registry.gitlab.com` is used by default.
 1. Select **Save changes**.
 
 GitLab Duo availability changes for the entire instance.
