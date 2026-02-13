@@ -14,43 +14,6 @@ module EE
 
         private
 
-        override :properties
-        def properties
-          properties = super
-          if exact_code_search_enabled?
-            desc = 'Performs a regex code search. Available for blobs scope; other scopes are ignored.'
-            properties[:regex] = { type: 'boolean', description: desc }
-          end
-
-          if advanced_search_enabled?
-            fields_description = <<~DESC.strip
-                                   Specify which fields to search within. Currently supported:
-                                   - Allowed values: title only
-                                   - Applicable scopes: issues, merge_requests
-            DESC
-
-            properties[:fields] = { type: 'array', items: { type: 'string' }, description: fields_description }
-          end
-
-          properties
-        end
-
-        override :description_parts
-        def description_parts
-          parts = super
-          parts << "- Advanced: \"bug AND critical\", \"display | banner\", \"#23456\"" if advanced_search_enabled?
-          parts << "- Exact code: \"class User\", \"foo lang:ruby\", \"sym:initialize\"" if exact_code_search_enabled?
-          parts
-        end
-
-        override :search_capabilities
-        def search_capabilities
-          capabilities = super
-          capabilities << 'advanced (boolean operators)' if advanced_search_enabled?
-          capabilities << 'exact code (exact match, regex, symbols)' if exact_code_search_enabled?
-          capabilities
-        end
-
         def apply_context_exclusion(args)
           # Only apply exclusion for blobs and wiki_blobs scopes
           return args unless %w[blobs wiki_blobs].include?(args[:scope])
