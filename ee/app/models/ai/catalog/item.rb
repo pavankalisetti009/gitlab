@@ -6,11 +6,6 @@ module Ai
       include ActiveRecord::Sanitization::ClassMethods
       include Gitlab::SQL::Pattern
 
-      # Temporarily pin certain items to the first page of the catalog.
-      # This is to be a temporary method that can be replaced by an improved
-      # feature such as:
-      # https://gitlab.com/groups/gitlab-org/-/epics/19577
-      GITLAB_ITEM_IDS = [104, 105, 356].freeze
       FOUNDATIONAL_FLOWS_LIMIT = 100
 
       self.table_name = "ai_catalog_items"
