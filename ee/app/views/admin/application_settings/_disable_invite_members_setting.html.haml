@@ -4,5 +4,7 @@
 
 .form-group
   %h5= _('Prevent group/project member invitations')
+  - dap_help_link = link_to(_('Learn more'), help_page_path('user/duo_agent_platform/troubleshooting.md', anchor: 'allow-members-to-be-added-to-projects'))
   = form.gitlab_ui_checkbox_component :disable_invite_members,
-    _('Disable inviting new members to group or project by group/project owners or project maintainers')
+    _('Disable inviting new members to group or project by group/project owners or project maintainers'),
+    help_text: '%{help_text} %{help_link}'.html_safe % { help_text: _('If enabled, Duo Agent Platform flows cannot add service accounts to projects and will not run.'), help_link: dap_help_link }

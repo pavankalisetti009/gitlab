@@ -9,3 +9,5 @@
     - c.with_help_text do
       - learn_more_link = link_to(_('Learn more'), help_page_path('user/group/manage.md', anchor: 'prevent-invitations-to-a-group'))
       = s_("GroupSettings|If enabled, users can no longer invite members to groups or projects in the top-level group. %{learn_more_link}.").html_safe % { learn_more_link: learn_more_link }
+      - dap_help_link = link_to(_('Learn more'), help_page_path('user/duo_agent_platform/troubleshooting.md', anchor: 'allow-members-to-be-added-to-projects'))
+      = s_("GroupSettings|This can also prevent Duo Agent Platform flows from adding service accounts. %{learn_more_link}.").html_safe % { learn_more_link: dap_help_link }
