@@ -23,7 +23,7 @@ module ComplianceManagement
 
     def self.predefined_controls
       strong_memoize(:predefined_controls) do
-        ::Gitlab::Json.parse(File.read(REQUIREMENT_CONTROLS_JSON_PATH), symbolize_names: true)
+        ::Gitlab::Json.safe_parse(File.read(REQUIREMENT_CONTROLS_JSON_PATH), symbolize_names: true)
       end
     end
 
