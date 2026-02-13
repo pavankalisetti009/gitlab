@@ -25,9 +25,9 @@ describe('ScanTriggersDetail', () => {
     expect(findCrud().props()).toMatchObject({
       isCollapsible: true,
       collapsed: true,
-      title: 'Git Push Events',
+      title: 'Secret push protection',
       description: 'Scan all Git push events and block pushes with detected secrets.',
-      anchorId: 'git-push-events',
+      anchorId: 'secret-push-protection',
       icon: 'push-rules',
     });
   });

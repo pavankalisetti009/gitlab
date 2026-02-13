@@ -11,7 +11,7 @@ export default {
     GlButton,
   },
   i18n: {
-    triggerTitle: s__('ScanProfiles|Git Push Events'),
+    triggerTitle: s__('ScanProfiles|Secret push protection'),
     triggerSubtitle: s__(
       'ScanProfiles|Scan all Git push events and block pushes with detected secrets.',
     ),
@@ -37,7 +37,7 @@ export default {
     :collapsed="collapsed"
     :title="$options.i18n.triggerTitle"
     :description="$options.i18n.triggerSubtitle"
-    anchor-id="git-push-events"
+    anchor-id="secret-push-protection"
     icon="push-rules"
   >
     <p class="gl-mb-4">
