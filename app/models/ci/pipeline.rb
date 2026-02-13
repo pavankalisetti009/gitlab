@@ -1048,6 +1048,15 @@ module Ci
       end
     end
 
+    def variables
+      return super if Feature.disabled?(:ci_read_pipeline_variables_from_artifact, project)
+
+      # TODO: Replace super with [] when Ci::PipelineVariable is dropped
+      # https://gitlab.com/gitlab-org/gitlab/-/issues/587237
+      read_variables_from_pipeline_artifact || super
+    end
+    strong_memoize_attr :variables
+
     def variables_builder
       @variables_builder ||= ::Gitlab::Ci::Variables::Builder.new(self)
     end
@@ -1759,6 +1768,14 @@ module Ci
 
     rescue Repository::AmbiguousRefError
       false
+    end
+
+    def read_variables_from_pipeline_artifact
+      artifact = pipeline_artifacts_pipeline_variables
+      return unless artifact
+
+      variables_attributes = Gitlab::Json.safe_parse(artifact.file.read)
+      variables_attributes.map { |var_attrs| Ci::PipelineVariableItem.new(pipeline: self, **var_attrs) }
     end
   end
 end
