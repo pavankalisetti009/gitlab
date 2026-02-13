@@ -18,6 +18,35 @@ RSpec.describe Ci::RunnerController, feature_category: :continuous_integration d
       is_expected.to have_one(:instance_level_scoping).class_name('Ci::RunnerControllerInstanceLevelScoping')
                                                 .inverse_of(:runner_controller)
     end
+
+    it 'has many runner_level_scopings' do
+      is_expected.to have_many(:runner_level_scopings).class_name('Ci::RunnerControllerRunnerLevelScoping')
+                                               .inverse_of(:runner_controller)
+    end
+
+    context 'when runner controller has mutliple instance-type runner controller scopings' do
+      let_it_be(:runner_controller) { create(:ci_runner_controller) }
+      let_it_be(:instance_runner_1) { create(:ci_runner, :instance) }
+      let_it_be(:instance_runner_2) { create(:ci_runner, :instance) }
+      let_it_be(:instance_runner_scoping_1) do
+        create(:ci_runner_controller_runner_level_scoping,
+          runner_controller: runner_controller,
+          runner: instance_runner_1)
+      end
+
+      let_it_be(:instance_runner_scoping_2) do
+        create(:ci_runner_controller_runner_level_scoping,
+          runner_controller: runner_controller,
+          runner: instance_runner_2)
+      end
+
+      it 'returns all associated runner-level scopings' do
+        expect(runner_controller.runner_level_scopings).to contain_exactly(
+          instance_runner_scoping_1,
+          instance_runner_scoping_2
+        )
+      end
+    end
   end
 
   describe 'state enum' do

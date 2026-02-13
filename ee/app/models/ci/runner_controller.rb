@@ -20,6 +20,10 @@ module Ci
       class_name: 'Ci::RunnerControllerInstanceLevelScoping',
       inverse_of: :runner_controller
 
+    has_many :runner_level_scopings,
+      class_name: 'Ci::RunnerControllerRunnerLevelScoping',
+      inverse_of: :runner_controller
+
     # Scope for controllers that are active (enabled or dry_run)
     scope :active, -> { where(state: [:enabled, :dry_run]) }
 
