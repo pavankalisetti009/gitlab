@@ -183,6 +183,25 @@ For customers on one of these distributions, we recommend migrating to a
 [Docker deployment of GitLab](https://docs.gitlab.com/install/docker/installation/) on your existing distribution.
 This avoids having to migrate to a different Linux distribution to continue to receive GitLab upgrades.
 
+### Linux package support for Ubuntu 20.04
+
+- Announced in GitLab 17.9
+- Removal in GitLab 19.0 ([breaking change](https://docs.gitlab.com/update/terminology/#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/omnibus-gitlab/-/issues/8915).
+
+Ubuntu standard support for Ubuntu 20.04 [ended in May 2025](https://wiki.ubuntu.com/Releases).
+
+In accordance with our [Linux package supported platforms policy](https://docs.gitlab.com/install/package/#supported-platforms),
+we drop package builds once a vendor stops supporting the operating system.
+
+From GitLab 19.0, we will no longer provide packages for the Ubuntu 20.04 distribution for Linux package installs.
+GitLab 18.11 will be the last GitLab version with Linux packages for Ubuntu 20.04.
+
+If you currently run GitLab on Ubuntu 20.04, you must upgrade to Ubuntu 22.04 or another
+[supported operating system](https://docs.gitlab.com/install/package/#supported-platforms) before upgrading to GitLab
+19.0. Canonical provides an [upgrade guide](https://documentation.ubuntu.com/server/how-to/software/upgrade-your-release/)
+to help you migrate.
+
 ### Mattermost bundled with Linux package
 
 - Announced in GitLab 18.9
@@ -327,20 +346,6 @@ Users importing repositories from Bitbucket Server, or from Bitbucket Cloud thro
 - To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/474175).
 
 With the [upcoming default behavior change to the CI/CD job token](https://docs.gitlab.com/update/deprecations/#default-cicd-job-token-ci_job_token-scope-changed) in GitLab 18.0, we are also deprecating the associated `ciJobTokenScopeAddProject` GraphQL mutation in favor of `ciJobTokenScopeAddGroupOrProject`.
-
-## GitLab 18.9
-
-### Linux packages for Ubuntu 20.04
-
-- Announced in GitLab 17.9
-- Removal in GitLab 18.9 ([breaking change](https://docs.gitlab.com/update/terminology/#breaking-change))
-- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/omnibus-gitlab/-/issues/8915).
-
-Ubuntu standard support for Ubuntu 20.04 [ends in May 2025](https://wiki.ubuntu.com/Releases).
-
-Therefore, from GitLab 18.9, we will no longer provide packages for the Ubuntu 20.04 distribution for Linux package installs.
-GitLab 18.8 will be the last GitLab version with Linux packages for Ubuntu 20.04.
-You should upgrade to Ubuntu 22.04 for continued support.
 
 ## GitLab 18.8
 
