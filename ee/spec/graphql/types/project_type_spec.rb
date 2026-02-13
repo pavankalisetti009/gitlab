@@ -406,10 +406,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :groups_and_proj
         resolve_field(:id, p, current_user: user)
       end
 
-      # TODO: Change back to `max_queries: 2` after https://gitlab.com/gitlab-org/gitlab/-/merge_requests/209320
-      # Currently `max_queries: 3` because the `access_security_and_compliance` authorization
-      # doesn't cache properly, causing the query to run multiple times per project.
-      results = batch_sync(max_queries: 3) do
+      results = batch_sync(max_queries: 2) do
         projects.flat_map do |p|
           resolve_field(:compliance_frameworks, p, current_user: user)
         end
@@ -497,7 +494,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :groups_and_proj
           project.add_reporter(current_user)
         end
 
-        it_behaves_like 'returning nil for compliance frameworks'
+        it_behaves_like 'returning compliance frameworks with requirements'
       end
 
       context 'when user is a developer' do

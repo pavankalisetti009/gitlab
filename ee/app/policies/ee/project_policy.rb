@@ -1167,6 +1167,14 @@ module EE
         prevent :read_compliance_violations_report
       end
 
+      rule { ~security_and_compliance_disabled & (can?(:reporter_access) | auditor) }.policy do
+        enable :read_compliance_framework
+      end
+
+      rule { can?(:access_security_and_compliance) }.policy do
+        enable :read_compliance_framework
+      end
+
       rule { custom_role_enables_manage_deploy_tokens }.policy do
         enable :manage_deploy_tokens
         enable :read_deploy_token
