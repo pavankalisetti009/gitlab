@@ -9,7 +9,7 @@ import {
   GlTable,
   GlTooltipDirective,
 } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { __, s__ } from '~/locale';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { numberToHumanSize } from '~/lib/utils/number_utils';
@@ -53,6 +53,37 @@ export default {
     canDelete() {
       return this.glAbilities.destroyVirtualRegistry;
     },
+    fields() {
+      return [
+        {
+          key: 'relativePath',
+          label: __('Artifact'),
+          thClass: 'gl-w-3/5',
+        },
+        {
+          key: 'size',
+          label: __('Size'),
+          tdClass: '!gl-align-middle',
+        },
+        {
+          key: 'downloadsCount',
+          label: s__('VirtualRegistryCacheEntry|Download count'),
+          tdClass: '!gl-align-middle',
+        },
+        {
+          key: 'upstreamCheckedAt',
+          label: s__('VirtualRegistryCacheEntry|Last checked'),
+          tdClass: '!gl-align-middle',
+        },
+        {
+          key: 'actions',
+          label: __('Actions'),
+          hide: !this.canDelete,
+          thAlignRight: true,
+          tdClass: '!gl-align-middle gl-text-right',
+        },
+      ].filter((field) => !field.hide);
+    },
   },
   methods: {
     handleDelete(item) {
@@ -67,24 +98,6 @@ export default {
       return numberToHumanSize(size);
     },
   },
-  fields: [
-    {
-      key: 'relativePath',
-      label: __('Artifact'),
-      thClass: 'gl-w-3/5',
-    },
-    {
-      key: 'size',
-      label: __('Size'),
-      tdClass: '!gl-align-middle',
-    },
-    {
-      key: 'actions',
-      label: __('Actions'),
-      thAlignRight: true,
-      thClass: 'gl-w-26',
-    },
-  ],
   modal: {
     primaryAction: {
       text: __('Delete'),
@@ -103,7 +116,7 @@ export default {
 <template>
   <div>
     <gl-table
-      :fields="$options.fields"
+      :fields="fields"
       :items="cacheEntries"
       stacked="sm"
       :tbody-tr-attr="{ 'data-testid': 'cache-entry-row' }"
@@ -134,27 +147,22 @@ export default {
         <span data-testid="artifact-size">{{ formatSize(item.size) }}</span>
       </template>
 
-      <template #cell(actions)="{ item }">
-        <div class="gl-flex gl-flex-col gl-items-end">
-          <gl-button
-            v-if="canDelete"
-            v-gl-tooltip="__('Delete')"
-            class="gl-mb-3"
-            :aria-label="__('Delete')"
-            size="small"
-            category="tertiary"
-            icon="remove"
-            data-testid="delete-cache-entry-btn"
-            @click="handleDelete(item)"
-          />
-          <div class="gl-text-sm gl-text-subtle">
-            <gl-sprintf :message="s__('VirtualRegistry|last checked %{date}')">
-              <template #date>
-                <time-ago-tooltip :time="item.upstreamCheckedAt" />
-              </template>
-            </gl-sprintf>
-          </div>
-        </div>
+      <template #cell(upstreamCheckedAt)="{ item }">
+        <span class="gl-text-subtle">
+          <time-ago-tooltip :time="item.upstreamCheckedAt" />
+        </span>
+      </template>
+
+      <template v-if="canDelete" #cell(actions)="{ item }">
+        <gl-button
+          v-gl-tooltip="__('Delete')"
+          :aria-label="__('Delete')"
+          size="small"
+          category="tertiary"
+          icon="remove"
+          data-testid="delete-cache-entry-btn"
+          @click="handleDelete(item)"
+        />
       </template>
     </gl-table>
     <gl-modal

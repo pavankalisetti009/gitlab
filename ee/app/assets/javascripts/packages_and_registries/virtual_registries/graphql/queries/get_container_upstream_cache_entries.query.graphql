@@ -17,6 +17,7 @@ query getCountUpstreamCacheEntries(
         contentType
         relativePath
         size
+        downloadsCount
         upstreamCheckedAt
       }
       pageInfo {

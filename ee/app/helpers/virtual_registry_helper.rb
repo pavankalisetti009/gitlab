@@ -46,6 +46,7 @@ module VirtualRegistryHelper
       modal_attributes: {
         title: s_('VirtualRegistry|Delete Maven registry'),
         size: 'sm',
+        modalClass: 'gl-break-words',
         messageHtml: format(
           s_('VirtualRegistry|Are you sure you want to delete %{strongOpen}%{name}%{strongClose}?'),
           name: maven_registry.name,

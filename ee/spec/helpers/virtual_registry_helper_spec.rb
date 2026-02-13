@@ -105,6 +105,7 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
         modal_attributes: {
           title: 'Delete Maven registry',
           size: 'sm',
+          modalClass: 'gl-break-words',
           messageHtml: 'Are you sure you want to delete <strong>test-registry</strong>?',
           okVariant: 'danger',
           okTitle: 'Delete'

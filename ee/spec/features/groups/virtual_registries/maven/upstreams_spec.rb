@@ -126,7 +126,7 @@ RSpec.describe 'Maven virtual registry upstreams', feature_category: :virtual_re
           click_button 'Delete upstream'
 
           within_modal do
-            click_button 'Delete upstream'
+            click_button 'Delete'
           end
 
           expect(page).to have_current_path(group_virtual_registries_maven_registries_and_upstreams_path(group,
