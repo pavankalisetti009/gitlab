@@ -67,7 +67,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
         it 'returns a secret' do
           expect(result).to be_success
 
-          secrets = result.payload[:project_secrets]
+          secrets = result.payload[:secrets]
           expect(secrets.size).to eq(2)
           secret1 = secrets.find { |s| s.name == 'SECRET1' }
           expect(secret1.status).to eq('CREATE_IN_PROGRESS')
@@ -77,7 +77,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
       context 'when there are no secrets' do
         it 'returns an empty array' do
           expect(result).to be_success
-          expect(result.payload[:project_secrets]).to eq([])
+          expect(result.payload[:secrets]).to eq([])
         end
       end
 
@@ -108,7 +108,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
         it 'returns all secrets' do
           expect(result).to be_success
 
-          secrets = result.payload[:project_secrets]
+          secrets = result.payload[:secrets]
           expect(secrets.size).to eq(2)
 
           expect(secrets.map(&:name)).to match_array(%w[SECRET1 SECRET2])
@@ -140,7 +140,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
 
           it 'returns completed for both secrets right after creation' do
             expect(result).to be_success
-            secrets = result.payload[:project_secrets]
+            secrets = result.payload[:secrets]
 
             secret1 = secrets.find { |s| s.name == 'SECRET1' }
             secret2 = secrets.find { |s| s.name == 'SECRET2' }
@@ -166,7 +166,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
 
               refreshed = service.execute(include_rotation_info: include_rotation_info)
               expect(refreshed).to be_success
-              secrets = refreshed.payload[:project_secrets]
+              secrets = refreshed.payload[:secrets]
 
               secret1 = secrets.find { |s| s.name == 'SECRET1' }
               secret2 = secrets.find { |s| s.name == 'SECRET2' }
@@ -195,7 +195,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
               refreshed = service.execute(include_rotation_info: include_rotation_info)
               expect(refreshed).to be_success
 
-              secret2 = refreshed.payload[:project_secrets].find { |s| s.name == 'SECRET2' }
+              secret2 = refreshed.payload[:secrets].find { |s| s.name == 'SECRET2' }
               expect(secret2.status).to eq('COMPLETED')
             end
           end
@@ -217,7 +217,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
               refreshed = service.execute(include_rotation_info: include_rotation_info)
               expect(refreshed).to be_success
 
-              secret2 = refreshed.payload[:project_secrets].find { |s| s.name == 'SECRET2' }
+              secret2 = refreshed.payload[:secrets].find { |s| s.name == 'SECRET2' }
               expect(secret2.status).to eq('CREATE_IN_PROGRESS')
             end
           end
@@ -229,7 +229,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
           it 'does not include the rotation info in the result' do
             expect(result).to be_success
 
-            secrets = result.payload[:project_secrets]
+            secrets = result.payload[:secrets]
             expect(secrets.size).to eq(2)
 
             expect(secrets.filter_map(&:rotation_info)).to be_empty
@@ -269,7 +269,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
 
       it 'returns success' do
         expect(result).to be_success
-        expect(result.payload[:project_secrets]).to eq([])
+        expect(result.payload[:secrets]).to eq([])
       end
     end
 
@@ -302,7 +302,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
 
       it 'returns success' do
         expect(result).to be_success
-        expect(result.payload[:project_secrets]).to eq([])
+        expect(result.payload[:secrets]).to eq([])
       end
     end
 

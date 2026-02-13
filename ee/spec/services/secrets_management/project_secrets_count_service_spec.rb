@@ -79,7 +79,7 @@ RSpec.describe SecretsManagement::ProjectSecretsCountService,
       it 'matches the count from ListService' do
         list_service = SecretsManagement::ProjectSecrets::ListService.new(project, user)
         list_result = list_service.execute
-        list_count = list_result.payload[:project_secrets]&.count || 0
+        list_count = list_result.payload[:secrets]&.count || 0
 
         expect(count).to eq(list_count),
           "ProjectSecretsCountService count (#{count}) should match ListService count (#{list_count})"

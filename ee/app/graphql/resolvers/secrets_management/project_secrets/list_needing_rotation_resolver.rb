@@ -25,7 +25,7 @@ module Resolvers
           ).execute
 
           if result.success?
-            result.payload[:project_secrets]
+            result.payload[:secrets]
           else
             raise_resource_not_available_error!(result.message)
           end

@@ -75,6 +75,8 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :api do
       :project_secrets_permissions,
       :group_secrets_manager,
       :group_secrets_permissions,
+      :group_secrets,
+      :group_secret,
       :security_policies_sync_status,
       :project_secret,
       :ai_feature_settings,
