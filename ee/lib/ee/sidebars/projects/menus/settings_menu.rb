@@ -51,7 +51,7 @@ module EE
           end
 
           def work_item_settings_menu_item
-            unless ::Feature.enabled?(:work_item_configurable_types, context.project)
+            unless ::Feature.enabled?(:work_item_configurable_types, context.project.root_namespace)
               return ::Sidebars::NilMenuItem.new(item_id: :work_items)
             end
 
