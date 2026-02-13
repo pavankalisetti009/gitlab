@@ -17,7 +17,8 @@ module Ai
         'start' => { name: 'duo_session_started', message: 'Started Duo session' },
         'finish' => { name: 'duo_session_finished', message: 'Completed Duo session' },
         'drop' => { name: 'duo_session_failed', message: 'Duo session failed' },
-        'stop' => { name: 'duo_session_stopped', message: 'Duo session stopped' }
+        'stop' => { name: 'duo_session_stopped', message: 'Duo session stopped' },
+        'resume' => { name: 'duo_session_resumed', message: 'Resumed Duo session' }
       }.freeze
 
       def initialize(workflow:, status_event:, current_user:)
