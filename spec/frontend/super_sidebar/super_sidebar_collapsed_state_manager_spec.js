@@ -45,7 +45,7 @@ describe('Super Sidebar Collapsed State Manager', () => {
     it('does not save cookie', () => {
       jest.spyOn(GlBreakpointInstance, 'windowWidth').mockReturnValue(xl);
 
-      toggleSuperSidebarCollapsed(true, true);
+      toggleSuperSidebarCollapsed(true);
 
       pageHasCollapsedClass(true);
       expect(setCookie).not.toHaveBeenCalled();

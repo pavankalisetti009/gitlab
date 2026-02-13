@@ -116,7 +116,7 @@ export const initSuperSidebar = ({
   if (!el) return false;
 
   bindSuperSidebarCollapsedEvents();
-  initSuperSidebarCollapsedState(parseBoolean());
+  initSuperSidebarCollapsedState();
 
   return new Vue({
     el,
