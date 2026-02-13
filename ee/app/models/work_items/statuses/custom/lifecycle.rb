@@ -28,8 +28,7 @@ module WorkItems
           class_name: 'WorkItems::Statuses::Custom::Status'
 
         has_many :type_custom_lifecycles,
-          class_name: 'WorkItems::TypeCustomLifecycle',
-          autosave: true
+          class_name: 'WorkItems::TypeCustomLifecycle'
 
         has_many :work_item_types,
           through: :type_custom_lifecycles,
@@ -45,38 +44,6 @@ module WorkItems
         # because you won't be able to change the namespace through the API.
         validate :validate_lifecycles_per_namespace_limit, on: :create
         validate :validate_statuses_limit
-
-        def work_item_types
-          if use_system_defined_types?
-            type_custom_lifecycles.map(&:work_item_type)
-          else
-            super
-          end
-        end
-
-        def work_item_types=(types)
-          if use_system_defined_types?
-            # Convert types to an array of IDs for comparison
-            new_type_ids = Array(types).compact.filter_map { |t| t.is_a?(Integer) ? t : t.id }.uniq
-
-            unless new_record?
-              # Remove associations that are no longer in the list
-              type_custom_lifecycles.each do |wt_cf|
-                wt_cf.mark_for_destruction unless new_type_ids.include?(wt_cf.work_item_type_id)
-              end
-            end
-
-            # Add new associations
-            existing_type_ids = type_custom_lifecycles.reject(&:marked_for_destruction?).map(&:work_item_type_id)
-            new_type_ids.each do |type_id|
-              next if existing_type_ids.include?(type_id)
-
-              type_custom_lifecycles.build(work_item_type_id: type_id, namespace: namespace)
-            end
-          else
-            super
-          end
-        end
 
         def ordered_statuses
           WorkItems::Statuses::Custom::Status.ordered_for_lifecycle(id)
@@ -111,10 +78,6 @@ module WorkItems
         end
 
         private
-
-        def use_system_defined_types?
-          Feature.enabled?(:work_item_system_defined_type, :instance)
-        end
 
         def ensure_default_statuses_in_lifecycle
           return unless default_open_status && default_closed_status && default_duplicate_status

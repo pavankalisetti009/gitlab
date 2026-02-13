@@ -2,8 +2,6 @@
 
 module WorkItems
   class TypeCustomLifecycle < ApplicationRecord
-    include WorkItems::TypesFramework::HasType
-
     self.table_name = 'work_item_type_custom_lifecycles'
 
     belongs_to :namespace
@@ -22,12 +20,14 @@ module WorkItems
       self.namespace ||= lifecycle&.namespace
     end
 
+    # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- small number of widgets
     def validate_status_widget_availability
       return if work_item_type.nil?
       return if namespace.nil?
-      return if work_item_type.widgets(namespace).map(&:widget_type).include?('status')
+      return if work_item_type.widgets(namespace).pluck(:widget_type).include?('status')
 
       errors.add(:work_item_type, 'does not support status widget')
     end
+    # rubocop: enable Database/AvoidUsingPluckWithoutLimit
   end
 end

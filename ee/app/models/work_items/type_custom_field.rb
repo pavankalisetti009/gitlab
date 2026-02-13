@@ -2,8 +2,6 @@
 
 module WorkItems
   class TypeCustomField < ApplicationRecord
-    include WorkItems::TypesFramework::HasType
-
     self.table_name = 'work_item_type_custom_fields'
 
     belongs_to :namespace

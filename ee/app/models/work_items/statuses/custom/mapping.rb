@@ -4,8 +4,6 @@ module WorkItems
   module Statuses
     module Custom
       class Mapping < ApplicationRecord
-        include WorkItems::TypesFramework::HasType
-
         self.table_name = 'work_item_custom_status_mappings'
 
         belongs_to :namespace

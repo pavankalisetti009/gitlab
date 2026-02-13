@@ -88,9 +88,7 @@ RSpec.describe "getting a project's linked observability logs", feature_category
         end
 
         create(:observability_logs_issues_connection, issue: create(:issue, project: project))
-        expect do
-          post_graphql(query, current_user: current_user)
-        end.to issue_same_number_of_queries_as(control).with_threshold(1)
+        expect { post_graphql(query, current_user: current_user) }.to issue_same_number_of_queries_as(control)
       end
     end
 

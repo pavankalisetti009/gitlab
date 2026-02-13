@@ -28,28 +28,11 @@ RSpec.shared_examples 'quick actions that change work item type ee' do
       let(:new_type) { 'objective' }
       let(:command) { "/promote_to #{new_type}" }
 
-      context "when the FF for system defined types is disabled" do
-        before do
-          stub_feature_flags(work_item_system_defined_type: false)
-        end
-
-        it 'populates :issue_type: and :work_item_type' do
-          _, updates, message = service.execute(command, work_item)
-
-          expect(message).to eq(_('Promoted successfully.'))
-          expect(updates).to eq(
-            { issue_type: 'objective', work_item_type: build_stubbed(:work_item_type, :objective) }
-          )
-        end
-      end
-
       it 'populates :issue_type: and :work_item_type' do
         _, updates, message = service.execute(command, work_item)
 
         expect(message).to eq(_('Promoted successfully.'))
-        expect(updates).to eq(
-          { issue_type: 'objective', work_item_type: build(:work_item_system_defined_type, :objective) }
-        )
+        expect(updates).to eq({ issue_type: 'objective', work_item_type: WorkItems::Type.default_by_type(:objective) })
       end
 
       context 'when new type is not supported' do

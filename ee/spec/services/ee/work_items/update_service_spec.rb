@@ -6,9 +6,9 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
   let_it_be(:developer) { create(:user) }
   let_it_be(:group) { create(:group, developers: developer) }
   let_it_be(:project) { create(:project, group: group) }
-  let_it_be(:issue_work_item_type) { build(:work_item_system_defined_type, :issue) }
-  let_it_be(:task_work_item_type) { build(:work_item_system_defined_type, :task) }
-  let_it_be(:incident_work_item_type) { build(:work_item_system_defined_type, :incident) }
+  let_it_be(:issue_work_item_type) { create(:work_item_type, :issue) }
+  let_it_be(:task_work_item_type) { create(:work_item_type, :task) }
+  let_it_be(:incident_work_item_type) { create(:work_item_type, :incident) }
   let_it_be(:work_item, refind: true) { create(:work_item, project: project) }
 
   let_it_be(:current_user) { developer }

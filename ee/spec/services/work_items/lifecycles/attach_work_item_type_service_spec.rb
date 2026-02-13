@@ -7,8 +7,8 @@ RSpec.describe WorkItems::Lifecycles::AttachWorkItemTypeService, feature_categor
   let_it_be(:user) { create(:user, maintainer_of: group) }
 
   let(:system_defined_to_do_status) { build(:work_item_system_defined_status) }
-  let(:work_item_type) { create(:work_item_system_defined_type, :issue) }
-  let(:requirement_work_item_type) { create(:work_item_system_defined_type, :requirement) }
+  let(:work_item_type) { create(:work_item_type, :issue) }
+  let(:requirement_work_item_type) { create(:work_item_type, :requirement) }
   let(:container) { group }
   let(:current_user) { user }
   let(:work_item_type_id) { work_item_type.to_gid }
