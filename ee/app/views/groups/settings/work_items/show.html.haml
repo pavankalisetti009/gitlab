@@ -10,4 +10,6 @@
 - else
   - breadcrumb_title title
   - page_title title
-#js-work-items-settings-form{ data: { full_path: @group.full_path, base_path: base_path } }
+
+#js-work-items-settings-form{ data: { full_path: @group.full_path, base_path: base_path, is_root_group: @is_root_group.to_s } }
+
