@@ -18,13 +18,13 @@ module EE
       override :widget_preloads
       def widget_preloads
         super.merge(
-          verification_status: { requirement: :recent_test_reports },
-          progress: :progress,
-          test_reports: :test_reports,
-          feature_flags: { feature_flags: :project },
-          iteration: { iteration: :group },
-          status: { current_status: :custom_status },
-          weight: :weights_source
+          [:widgets, :feature_flags] => { feature_flags: :project },
+          [:widgets, :iteration] => { iteration: :group },
+          [:widgets, :progress] => :progress,
+          [:widgets, :status] => { current_status: :custom_status },
+          [:widgets, :test_reports] => :test_reports,
+          [:widgets, :verification_status] => { requirement: :recent_test_reports },
+          [:widgets, :weight] => :weights_source
         )
       end
 
