@@ -11,7 +11,7 @@ module Projects
       private
 
       def authorize_work_item_settings!
-        access_denied! unless ::Feature.enabled?(:work_item_configurable_types, @project)
+        access_denied! unless ::Feature.enabled?(:work_item_configurable_types, @project.root_namespace)
       end
     end
   end
