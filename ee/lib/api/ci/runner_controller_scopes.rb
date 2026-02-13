@@ -21,7 +21,7 @@ module API
 
       resource :runner_controllers do
         desc 'List runner controller scopes' do
-          detail 'Get all scopes for a specific runner controller.'
+          detail 'Get all scopes for a specific runner controller. This feature is experimental.'
           success code: 200
           tags %w[runner_controllers]
           failure [
@@ -45,7 +45,7 @@ module API
         end
 
         desc 'Add instance-level scope' do
-          detail 'Add an instance-level scope to a runner controller.'
+          detail 'Add an instance-level scope to a runner controller. This feature is experimental.'
           success Entities::Ci::RunnerControllerInstanceLevelScoping
           tags %w[runner_controllers]
           failure [
@@ -75,7 +75,7 @@ module API
         end
 
         desc 'Remove instance-level scope' do
-          detail 'Remove an instance-level scope from a runner controller.'
+          detail 'Remove an instance-level scope from a runner controller. This feature is experimental.'
           success code: 204
           tags %w[runner_controllers]
           failure [
