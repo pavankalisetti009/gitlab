@@ -8,7 +8,6 @@ module Projects
       feature_category :user_management
 
       before_action :check_feature_flag!
-      before_action :authorize_admin_service_accounts!, except: [:index, :show]
       before_action :authorize_read_service_accounts!, only: [:index, :show]
 
       before_action do
@@ -23,11 +22,6 @@ module Projects
 
       def authorize_read_service_accounts!
         render_404 unless can?(current_user, :read_service_account, project)
-      end
-
-      def authorize_admin_service_accounts!
-        render_404 unless can?(current_user, :create_service_account, project) &&
-          can?(current_user, :delete_service_account, project)
       end
     end
   end
