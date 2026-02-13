@@ -5935,7 +5935,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
-  %i[read_secret write_secret delete_secret].each do |permission|
+  %i[read_secret create_secret update_secret delete_secret].each do |permission|
     describe permission.to_s do
       let(:permission) { permission }
 

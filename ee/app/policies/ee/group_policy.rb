@@ -1318,7 +1318,8 @@ module EE
 
       rule { can?(:reporter_access) & group_secrets_manager_enabled }.policy do
         enable :read_secret
-        enable :write_secret
+        enable :create_secret
+        enable :update_secret
         enable :delete_secret
       end
     end
