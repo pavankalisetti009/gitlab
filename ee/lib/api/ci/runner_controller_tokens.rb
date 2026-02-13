@@ -15,7 +15,7 @@ module API
 
       resource :runner_controllers do
         desc 'List runner controller tokens' do
-          detail 'Get all tokens for a specific runner controller.'
+          detail 'Get all tokens for a specific runner controller. This feature is experimental.'
           is_array true
           success Entities::Ci::RunnerControllerToken
           tags %w[runners]
@@ -37,7 +37,8 @@ module API
         end
 
         desc 'Get single runner controller token' do
-          detail 'Get a token for a specific runner controller by using the ID of the token.'
+          detail 'Get a token for a specific runner controller by using the ID of the token. \
+            This feature is experimental.'
           success Entities::Ci::RunnerControllerToken
           failure [
             { code: 403, message: 'Forbidden' },
@@ -62,7 +63,7 @@ module API
         end
 
         desc 'Create a runner controller token' do
-          detail 'Create a new token for a specific runner controller.'
+          detail 'Create a new token for a specific runner controller. This feature is experimental.'
           success Entities::Ci::RunnerControllerToken
           failure [
             { code: 403, message: 'Forbidden' },
@@ -90,7 +91,7 @@ module API
         end
 
         desc 'Revoke a runner controller token' do
-          detail 'Revoke a token for a specific runner controller.'
+          detail 'Revoke a token for a specific runner controller. This feature is experimental.'
           success code: 204
           failure [
             { code: 403, message: 'Forbidden' },
@@ -120,7 +121,7 @@ module API
         end
 
         desc 'Rotate a runner controller token' do
-          detail 'Rotate an existing token for a specific runner controller.'
+          detail 'Rotate an existing token for a specific runner controller. This feature is experimental.'
           success Entities::Ci::RunnerControllerTokenWithToken
           failure [
             { code: 403, message: 'Forbidden' },

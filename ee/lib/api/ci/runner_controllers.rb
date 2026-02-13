@@ -14,7 +14,7 @@ module API
 
       resource :runner_controllers do
         desc 'List runner controllers' do
-          detail 'Get all runner controllers.'
+          detail 'Get all runner controllers. This feature is experimental.'
           is_array true
           success Entities::Ci::RunnerController
           tags %w[runners]
@@ -32,7 +32,7 @@ module API
         end
 
         desc 'Get single runner controller' do
-          detail 'Get a runner controller by using the ID of the controller.'
+          detail 'Get a runner controller by using the ID of the controller. This feature is experimental.'
           success Entities::Ci::RunnerController
           failure [
             { code: 403, message: 'Forbidden' },
@@ -54,7 +54,7 @@ module API
         end
 
         desc 'Register a runner controller' do
-          detail 'Register a new runner controller.'
+          detail 'Register a new runner controller. This feature is experimental.'
           success Entities::Ci::RunnerController
           failure [
             { code: 403, message: 'Forbidden' },
@@ -83,7 +83,7 @@ module API
         end
 
         desc 'Update a runner controller' do
-          detail 'Update a runner controller by using the ID of the controller.'
+          detail 'Update a runner controller by using the ID of the controller. This feature is experimental.'
           success Entities::Ci::RunnerController
           failure [
             { code: 403, message: 'Forbidden' },
@@ -115,7 +115,7 @@ module API
         end
 
         desc 'Delete a runner controller' do
-          detail 'Delete a runner controller by using the ID of the controller.'
+          detail 'Delete a runner controller by using the ID of the controller. This feature is experimental.'
           success Entities::Ci::RunnerController
           failure [
             { code: 403, message: 'Forbidden' },
