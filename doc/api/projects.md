@@ -1809,30 +1809,6 @@ Example response:
 ]
 ```
 
-### Search for projects by name
-
-Search for projects by name that are accessible to the authenticated user. If this endpoint is accessed without
-authentication, it lists projects that are publicly accessible.
-
-```plaintext
-GET /projects
-```
-
-Example attributes:
-
-| Attribute  | Type   | Required | Description |
-|:-----------|:-------|:---------|:------------|
-| `search`   | string | Yes      | A string contained in the project name. |
-| `order_by` | string | No       | Return requests ordered by `id`, `name`, `created_at`, `star_count`, or `last_activity_at` fields. |
-| `sort`     | string | No       | Return requests sorted in `asc` or `desc` order. |
-
-Example request:
-
-```shell
-curl --header "PRIVATE-TOKEN: <your_access_token>" \
-  --url "https://gitlab.example.com/api/v4/projects?search=test"
-```
-
 ## List attributes
 
 List attributes of a project.
