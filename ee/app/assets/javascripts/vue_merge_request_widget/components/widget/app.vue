@@ -9,6 +9,9 @@ export default {
   apollo: {
     violationsCount: {
       query: violationsCountQuery,
+      context: {
+        featureCategory: 'security_policy_management',
+      },
       variables() {
         return {
           iid: `${this.mr.iid}`,

@@ -208,6 +208,9 @@ export default {
           first: 99999,
         };
       },
+      context: {
+        featureCategory: 'duo_agent_platform',
+      },
       fetchPolicy: fetchPolicies.NETWORK_ONLY,
       update(data) {
         return data?.duoWorkflowWorkflows?.edges?.map((edge) => edge.node) || [];
@@ -225,6 +228,9 @@ export default {
           url: typeof window !== 'undefined' && window.location ? window.location.href : '',
           questionCount: 4,
         };
+      },
+      context: {
+        featureCategory: 'duo_agent_platform',
       },
       update(data) {
         return data?.aiChatContextPresets || {};
@@ -244,6 +250,9 @@ export default {
         return {
           rootNamespaceId: this.rootNamespaceId,
         };
+      },
+      context: {
+        featureCategory: 'duo_agent_platform',
       },
       update(data) {
         const { selectableModels = [], defaultModel, pinnedModel } = data.aiChatAvailableModels;
@@ -284,6 +293,9 @@ export default {
       variables() {
         return this.projectId ? { projectId: this.projectId } : { groupId: this.namespaceId };
       },
+      context: {
+        featureCategory: 'duo_agent_platform',
+      },
       // NOTE, any update here should also be made to ee/app/assets/javascripts/ai/components/new_chat_button.vue
       update(data) {
         return (data?.aiCatalogConfiguredItems.nodes || []).map((node) => ({
@@ -311,6 +323,9 @@ export default {
           namespaceId: this.namespaceId,
         };
       },
+      context: {
+        featureCategory: 'duo_agent_platform',
+      },
       error(err) {
         this.onError(err);
       },
@@ -319,6 +334,9 @@ export default {
       query: getAgentFlowConfig,
       variables() {
         return { agentVersionId: this.aiCatalogItemVersionId };
+      },
+      context: {
+        featureCategory: 'duo_agent_platform',
       },
       skip() {
         return !this.aiCatalogItemVersionId;

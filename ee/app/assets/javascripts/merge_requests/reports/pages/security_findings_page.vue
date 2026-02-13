@@ -69,6 +69,9 @@ export default {
           pipelineIid: this.pipelineIid,
         };
       },
+      context: {
+        featureCategory: 'vulnerability_management',
+      },
       update({ project }) {
         if (!project?.pipeline) {
           return { full: {}, partial: {} };
@@ -223,6 +226,9 @@ export default {
 
       const result = await this.$apollo.query({
         query: findingReportsComparerQuery,
+        context: {
+          featureCategory: 'vulnerability_management',
+        },
         variables: {
           fullPath: this.targetProjectFullPath,
           iid: String(this.mr.iid),

@@ -31,6 +31,9 @@ export default {
       variables() {
         return { iid: this.mr.iid.toString(), projectPath: this.mr.targetProjectFullPath };
       },
+      context: {
+        featureCategory: 'security_policy_management',
+      },
       update(data) {
         // policies are only returned if the user is able to approve the MR
         const policies = get(data, 'project.mergeRequest.policyViolations.policies', []);

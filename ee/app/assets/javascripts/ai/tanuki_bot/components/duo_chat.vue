@@ -113,6 +113,9 @@ export default {
   apollo: {
     aiConversationThreads: {
       query: getAiConversationThreads,
+      context: {
+        featureCategory: 'duo_agent_platform',
+      },
       skip() {
         return this.shouldSkipQueries;
       },
@@ -125,6 +128,9 @@ export default {
     },
     aiSlashCommands: {
       query: getAiSlashCommands,
+      context: {
+        featureCategory: 'duo_agent_platform',
+      },
       skip() {
         return this.shouldSkipQueries;
       },
@@ -142,6 +148,9 @@ export default {
     },
     contextPresets: {
       query: getAiChatContextPresets,
+      context: {
+        featureCategory: 'duo_agent_platform',
+      },
       skip() {
         return this.shouldSkipQueries;
       },
