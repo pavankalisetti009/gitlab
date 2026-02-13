@@ -511,11 +511,28 @@ module Gitlab
 
       def related_ids_for_notes(noteable_type)
         strong_memoize_with(:related_ids_for_notes, noteable_type) do
+          # Skip related_ids query to avoid exceeding ES term limit
+          # when namespace hierarchy has more than 65k projects
+          next [] if skip_related_ids_for_large_namespace?
+
           options = scope_options(:notes).merge(count_only: false, noteable_type: noteable_type, related_ids_only: true)
 
           notes_response = Note.elastic_search(query, options: options).response
           notes_response['hits']['hits'].filter_map { |hit| hit['_source']['noteable_id'] }.uniq
         end
+      end
+
+      # Override in subclasses to return the root namespace for feature flag checking
+      # @return [Namespace, nil] The root ancestor namespace, or nil if not applicable
+      def root_namespace_for_feature_flag
+        nil
+      end
+
+      def skip_related_ids_for_large_namespace?
+        namespace = root_namespace_for_feature_flag
+        return false unless namespace
+
+        Feature.enabled?(:search_skip_related_ids, namespace)
       end
 
       def epics(page: 1, per_page: DEFAULT_PER_PAGE, count_only: false, preload_method: nil)

@@ -131,10 +131,18 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
 
         include_examples 'search results filtered by state'
         context 'on self hosted' do
+          before do
+            stub_feature_flags(search_skip_related_ids: false)
+          end
+
           include_examples 'searching notable entries in merge requests'
         end
 
         context 'on SAAS', :saas do
+          before do
+            stub_feature_flags(search_skip_related_ids: false)
+          end
+
           include_examples 'searching notable entries in merge requests'
         end
       end
@@ -242,6 +250,7 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
     let(:query) { '*' }
 
     before do
+      stub_feature_flags(search_skip_related_ids: false)
       # wiki_blobs method checks to see if there is a wiki page before doing the search
       create(:wiki_page, wiki: project.wiki)
     end
@@ -351,6 +360,56 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
         expect(options).to be_a(Hash)
         expect(options[:search_level]).to eq('project')
         expect(options[:klass]).to eq(WorkItem)
+      end
+    end
+  end
+
+  describe '#related_ids_for_notes' do
+    let_it_be(:top_level_group) { create(:group) }
+    let_it_be(:project) { create(:project, :public, group: top_level_group) }
+    let_it_be(:issue) { create(:issue, project: project) }
+    let_it_be(:note) { create(:note, noteable: issue, project: project) }
+
+    before do
+      Elastic::ProcessBookkeepingService.track!(issue, note)
+      ensure_elasticsearch_index!
+    end
+
+    context 'when search_skip_related_ids feature flag is disabled' do
+      before do
+        stub_feature_flags(search_skip_related_ids: false)
+      end
+
+      it 'calls elastic_search on Note model' do
+        expect(Note).to receive(:elastic_search).and_call_original
+
+        results.send(:scope_options, :merge_requests)
+      end
+    end
+
+    context 'when search_skip_related_ids feature flag is enabled for root ancestor' do
+      before do
+        stub_feature_flags(search_skip_related_ids: top_level_group)
+      end
+
+      it 'skips related_ids query and returns empty array' do
+        expect(Note).not_to receive(:elastic_search)
+
+        result = results.send(:related_ids_for_notes, MergeRequest.name)
+
+        expect(result).to eq([])
+      end
+
+      it 'does not include related_ids in merge_requests scope options' do
+        options = results.send(:scope_options, :merge_requests)
+
+        expect(options[:related_ids]).to eq([])
+      end
+
+      it 'does not include related_ids in work_items scope options' do
+        options = results.send(:build_work_items_search_options, 'issues')
+
+        expect(options[:related_ids]).to eq([])
       end
     end
   end

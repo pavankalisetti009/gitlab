@@ -55,6 +55,11 @@ module Gitlab
       def build_work_items_search_options(search_scope)
         super.merge(root_ancestor_ids: [group.root_ancestor.id], related_ids: related_ids_for_notes(Issue.name))
       end
+
+      override :root_namespace_for_feature_flag
+      def root_namespace_for_feature_flag
+        group.root_ancestor
+      end
     end
   end
 end

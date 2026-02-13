@@ -118,6 +118,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       let_it_be(:note) { create(:note_on_issue, note: 'Goodbye moon', noteable: issue, project: issue.project) }
 
       before do
+        stub_feature_flags(search_skip_related_ids: false)
         Elastic::ProcessInitialBookkeepingService.track!(issue, note)
         ensure_elasticsearch_index!
       end

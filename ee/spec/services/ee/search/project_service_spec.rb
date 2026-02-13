@@ -483,6 +483,7 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
     let(:service) { described_class.new(user, project, search: 'Goodbye').execute }
 
     before do
+      stub_feature_flags(search_skip_related_ids: false)
       Elastic::ProcessInitialBookkeepingService.track!(issue, note)
       ensure_elasticsearch_index!
     end

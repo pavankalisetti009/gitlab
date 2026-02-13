@@ -1,0 +1,10 @@
+---
+name: search_skip_related_ids
+description: Skip related_ids_for_notes filter for top-level namespace searches to avoid ES term limit
+feature_issue_url:
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/223186
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/589750
+milestone: '18.9'
+group: group::global search
+type: gitlab_com_derisk
+default_enabled: false
