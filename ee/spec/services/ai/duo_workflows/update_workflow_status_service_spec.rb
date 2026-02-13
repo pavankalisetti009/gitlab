@@ -366,6 +366,40 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
                     })
           expect(workflow.reload.human_status_name).to eq("running")
         end
+
+        it 'creates an audit event when resuming a workflow' do
+          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+            hash_including(
+              name: 'duo_session_resumed',
+              author: user,
+              scope: project,
+              target: workflow,
+              message: 'Resumed Duo session'
+            )
+          )
+
+          described_class.new(workflow: workflow, current_user: user, status_event: "resume").execute
+        end
+
+        context 'when audit event creation fails for resume event' do
+          let(:audit_error) { StandardError.new('Audit service unavailable') }
+
+          before do
+            allow(::Gitlab::Audit::Auditor).to receive(:audit).and_raise(audit_error)
+          end
+
+          it 'tracks the exception and workflow update continues successfully' do
+            expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+              audit_error,
+              hash_including(workflow_id: workflow.id)
+            )
+
+            result = described_class.new(workflow: workflow, current_user: user, status_event: "resume").execute
+
+            expect(result[:status]).to eq(:success)
+            expect(workflow.reload.human_status_name).to eq("running")
+          end
+        end
       end
 
       context "when initial status is created" do
