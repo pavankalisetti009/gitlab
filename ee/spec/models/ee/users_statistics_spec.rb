@@ -8,8 +8,14 @@ RSpec.describe UsersStatistics, feature_category: :user_management do
   end
 
   describe '#billable' do
-    it 'sums users statistics values excluding blocked users and bots' do
-      expect(users_statistics.billable).to eq(81)
+    context 'when there is a premium license' do
+      before do
+        create_current_license(plan: License::PREMIUM_PLAN)
+      end
+
+      it 'excludes blocked users, bots, and minimal access users' do
+        expect(users_statistics.billable).to eq(76)
+      end
     end
 
     context 'when there is an ultimate license' do
@@ -30,8 +36,14 @@ RSpec.describe UsersStatistics, feature_category: :user_management do
   end
 
   describe '#non_billable' do
-    it 'includes bots only' do
-      expect(users_statistics.non_billable).to eq(2)
+    context 'when there is a premium license' do
+      before do
+        create_current_license(plan: License::PREMIUM_PLAN)
+      end
+
+      it 'includes bots and minimal access users' do
+        expect(users_statistics.non_billable).to eq(7)
+      end
     end
 
     context 'when there is an ultimate license' do

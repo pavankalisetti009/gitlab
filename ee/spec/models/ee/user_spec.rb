@@ -1540,6 +1540,7 @@ RSpec.describe User, feature_category: :system_access do
     let_it_be(:regular_user) { create(:user) }
     let_it_be(:project_reporter_user) { create(:project_member, :reporter).user }
     let_it_be(:project_guest_user) { create(:project_member, :guest).user }
+    let_it_be(:minimal_access_user) { create(:group_member, :minimal_access).user }
     let_it_be(:group) { create(:group) }
     let_it_be(:member_role_elevating) { create(:member_role, :billable, namespace: group) }
     let_it_be(:member_role_basic) { create(:member_role, :non_billable, namespace: group) }
@@ -1563,12 +1564,26 @@ RSpec.describe User, feature_category: :system_access do
         AND
         "users"."user_type" IN \(0, 6, 4, 13\)
         AND
-        "users"."user_type" IN \(0, 4, 5, 15, 17\)'.squish
+        "users"."user_type" IN \(0, 4, 5, 15, 17\)
+        AND
+        \(NOT EXISTS
+          \(SELECT 1 FROM "members"
+            WHERE "members"."user_id" = "users"."id" AND "members"."requested_at" IS NULL GROUP BY "members"."user_id"
+            HAVING \(MAX\(access_level\) = 5\)\)\)'.squish
+      end
+
+      before do
+        license = double('License', exclude_guests_from_active_count?: false, feature_available?: true)
+        allow(License).to receive(:current) { license }
       end
 
       it 'validates the sql matches the specific index we have' do
         expect(users.to_sql.squish).to match(expected_sql_regexp),
           "query was changed. Please ensure query is covered with an index and adjust this test case"
+      end
+
+      it 'excludes minimal access users' do
+        expect(users).not_to include(minimal_access_user)
       end
 
       it 'returns users' do
@@ -1581,6 +1596,19 @@ RSpec.describe User, feature_category: :system_access do
 
         expect(users).not_to include(bot_user)
         expect(users).not_to include(service_account)
+      end
+
+      context 'with minimal access membership and existing billable membership' do
+        let(:mixed_memberships_user) { create(:user) }
+
+        before do
+          create(:group_member, :developer, user: mixed_memberships_user, source: create(:group))
+          create(:group_member, :minimal_access, user: mixed_memberships_user, source: create(:group))
+        end
+
+        it 'includes users with MA in one group and developer in another group' do
+          expect(users).to include(mixed_memberships_user)
+        end
       end
     end
 
@@ -1613,6 +1641,10 @@ RSpec.describe User, feature_category: :system_access do
 
       it 'excludes users requesting access' do
         expect(users).not_to include(user_with_access_request)
+      end
+
+      it 'excludes minimal access users' do
+        expect(users).not_to include(minimal_access_user)
       end
 
       context 'with elevating role' do
@@ -2145,10 +2177,46 @@ RSpec.describe User, feature_category: :system_access do
             expect(project_guest_user.using_license_seat?).to eq false
           end
 
-          it 'returns true if license is not ultimate and not nil' do
-            create(:license, plan: License::STARTER_PLAN)
+          it 'returns true if license is premium' do
+            create(:license, plan: License::PREMIUM_PLAN)
 
             expect(project_guest_user.using_license_seat?).to eq true
+          end
+        end
+
+        context 'user is minimal access' do
+          let(:minimal_access_user) { create(:group_member, :minimal_access).user }
+
+          before do
+            Users::UpdateHighestMemberRoleService.new(minimal_access_user).execute
+          end
+
+          it 'returns false if license is ultimate' do
+            create(:license, plan: License::ULTIMATE_PLAN)
+
+            expect(minimal_access_user.using_license_seat?).to eq false
+          end
+
+          it 'returns false if license is premium' do
+            create(:license, plan: License::PREMIUM_PLAN)
+
+            expect(minimal_access_user.using_license_seat?).to eq false
+          end
+        end
+
+        context 'user does not have any memberships' do
+          let(:user) { create(:user) }
+
+          it 'returns false if license is ultimate' do
+            create(:license, plan: License::ULTIMATE_PLAN)
+
+            expect(user.using_license_seat?).to eq false
+          end
+
+          it 'returns true if license is premium' do
+            create(:license, plan: License::PREMIUM_PLAN)
+
+            expect(user.using_license_seat?).to eq true
           end
         end
 
@@ -2161,8 +2229,8 @@ RSpec.describe User, feature_category: :system_access do
             expect(user.using_license_seat?).to eq false
           end
 
-          it 'returns true if license is not ultimate and not nil' do
-            create(:license, plan: License::STARTER_PLAN)
+          it 'returns true if license is premium' do
+            create(:license, plan: License::PREMIUM_PLAN)
 
             expect(user.using_license_seat?).to eq true
           end

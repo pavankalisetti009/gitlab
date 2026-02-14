@@ -211,6 +211,20 @@ module EE
           .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/422405')
       end
 
+      # This scope is only used on Self-Managed Premium instances.
+      # Ultimate instances would use excluding_guests_and_requests instead.
+      scope :excluding_minimal_access, -> do
+        subquery = ::Member
+          .select(1)
+          .where(::Member.arel_table[:user_id].eq(::User.arel_table[:id]))
+          .non_request
+          .group('user_id')
+          .having('MAX(access_level) = ?', ::Gitlab::Access::MINIMAL_ACCESS)
+
+        where('NOT EXISTS (?)', subquery)
+          .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/422405')
+      end
+
       scope :guests_with_elevating_role, -> do
         joins(:user_highest_role).joins(:elevated_members)
           .where(user_highest_role: { highest_access_level: ::Gitlab::Access::GUEST })
@@ -339,10 +353,10 @@ module EE
         scope = active.without_bots
 
         if License.current&.exclude_guests_from_active_count?
-          scope = scope.excluding_guests_and_requests
+          scope.excluding_guests_and_requests
+        else
+          scope.excluding_minimal_access
         end
-
-        scope
       end
 
       def non_billable_users_for_billable_management(user_ids)
@@ -975,9 +989,17 @@ module EE
     end
 
     def paid_in_current_license?
-      return true unless License.current.exclude_guests_from_active_count?
-
-      highest_role > ::Gitlab::Access::GUEST || elevated_members.any?
+      if License.current.exclude_guests_from_active_count? # Ultimate
+        highest_role > ::Gitlab::Access::GUEST || elevated_members.any?
+      else # Premium
+        #
+        # As per https://gitlab.com/gitlab-org/gitlab/-/issues/330663#note_2957618576, we will keep
+        # users without memberships and users with any roles EXCEPT minimal access billable on
+        # self-managed Premium. The long-term goal is to make users without memberships non-billable
+        # as well.
+        #
+        highest_role != ::Gitlab::Access::MINIMAL_ACCESS
+      end
     end
 
     def available_minimal_access_groups

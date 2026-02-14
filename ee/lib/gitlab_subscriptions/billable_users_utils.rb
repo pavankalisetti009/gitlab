@@ -7,16 +7,16 @@ module GitlabSubscriptions
     InvalidSubscriptionTypeError = Class.new(StandardError)
     InvalidMemberRoleError = Class.new(StandardError)
 
-    # GUEST(non elevated) and MINIMAL ACCESS are non-billable on
-    # exclude_guests_from_active_count? plans, rest are billable
+    # MINIMAL ACCESS are always non-billable
+    # GUEST(non elevated) are non-billable on exclude_guests_from_active_count? plans, rest are billable
     def sm_billable_role_change?(role:, member_role_id: nil)
       raise InvalidSubscriptionTypeError if gitlab_com_subscription?
+
+      return false if role == Gitlab::Access::MINIMAL_ACCESS
 
       return true if role > Gitlab::Access::GUEST
 
       return true unless License.current&.exclude_guests_from_active_count?
-
-      return false if role == Gitlab::Access::MINIMAL_ACCESS
 
       member_role_billable?(member_role_id)
     end
