@@ -2,6 +2,8 @@
 key_path: counts.total_dependency_proxy_packages_maven_file_pulled_from_external
 description: The number of files pulled through the Maven dependency proxy without using the cache.
 product_group: package_registry
+product_categories:
+- virtual_registry
 performance_indicator_type: []
 value_type: number
 status: active
