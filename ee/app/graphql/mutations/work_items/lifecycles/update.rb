@@ -26,7 +26,7 @@ module Mutations
           required: false,
           description: 'Name of the lifecycle.'
 
-        argument :statuses, [Types::WorkItems::StatusInputType],
+        argument :statuses, [::Types::WorkItems::StatusInputType],
           required: false,
           description: 'Statuses of the lifecycle. Can be existing (with id) or new (without id).'
 
@@ -42,7 +42,7 @@ module Mutations
           required: false,
           description: 'Index of the default duplicated status in the statuses array.'
 
-        argument :status_mappings, [Types::WorkItems::StatusMappingInputType],
+        argument :status_mappings, [::Types::WorkItems::StatusMappingInputType],
           required: false,
           description: 'Mappings for statuses being removed from the lifecycle. Maps old status to replacement status.'
 

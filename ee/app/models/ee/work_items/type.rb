@@ -73,7 +73,7 @@ module EE
 
       def unlicensed_widget_classes(resource_parent)
         LICENSED_WIDGETS.flat_map do |licensed_feature, widget_class|
-          widget_class unless resource_parent.licensed_feature_available?(licensed_feature)
+          widget_class unless feature_available_for_resource?(resource_parent, licensed_feature)
         end.compact
       end
 
@@ -82,12 +82,19 @@ module EE
         return [] if epic?
 
         ee_base_types = LICENSED_TYPES.flat_map do |type, licensed_feature|
-          type.to_s if resource_parent.licensed_feature_available?(licensed_feature.to_sym)
+          type.to_s if feature_available_for_resource?(resource_parent, licensed_feature)
         end.compact
 
-        group = resource_parent.is_a?(Group) ? resource_parent : resource_parent.group
+        group = case resource_parent
+                when ::Organizations::Organization
+                  nil
+                when Group
+                  resource_parent
+                else
+                  resource_parent&.group
+                end
 
-        ee_base_types -= %w[epic] unless Ability.allowed?(user, :create_epic, group)
+        ee_base_types -= %w[epic] unless group && Ability.allowed?(user, :create_epic, group)
 
         project = if resource_parent.is_a?(Project)
                     resource_parent
@@ -110,6 +117,16 @@ module EE
           next type unless license_name
 
           resource_parent&.licensed_feature_available?(license_name)
+        end
+      end
+
+      def feature_available_for_resource?(resource_parent, licensed_feature)
+        case resource_parent
+        when ::Organizations::Organization
+          # For organizations, check the license directly since they don't have licensed_feature_available?
+          License.feature_available?(licensed_feature)
+        else
+          resource_parent&.licensed_feature_available?(licensed_feature)
         end
       end
     end

@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe WorkItems::TypesFramework::SystemDefined::Type, feature_category: :team_planning do
+  let_it_be(:organization) { create(:organization) }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:user) { create(:user) }
@@ -243,6 +244,29 @@ RSpec.describe WorkItems::TypesFramework::SystemDefined::Type, feature_category:
       let(:resource_parent) { project.project_namespace }
 
       it_behaves_like "for objective and key result"
+    end
+
+    context 'with organization as resource_parent' do
+      let(:resource_parent) { organization }
+
+      before do
+        stub_licensed_features(epics: true, requirements: true)
+      end
+
+      it 'supports licensed types but excludes epics for organizations' do
+        result = issue_type.supported_conversion_types(resource_parent, user)
+
+        expect(result.map(&:base_type)).to include('requirement')
+        expect(result.map(&:base_type)).not_to include('epic')
+      end
+    end
+
+    context 'with nil as resource_parent' do
+      it 'handles nil resource_parent gracefully' do
+        result = issue_type.supported_conversion_types(nil, user)
+
+        expect(result.map(&:base_type)).to match_array(%w[task incident ticket])
+      end
     end
 
     context 'with no licensed features' do
@@ -812,6 +836,55 @@ RSpec.describe WorkItems::TypesFramework::SystemDefined::Type, feature_category:
           widget_types = widgets.map(&:widget_type)
 
           expect(widget_types).not_to include('iteration', 'weight')
+        end
+      end
+    end
+
+    context 'with organization as resource_parent' do
+      context 'when all licensed features are available' do
+        before do
+          stub_licensed_features(
+            iterations: true,
+            issue_weights: true,
+            issuable_health_status: true,
+            okrs: true,
+            epic_colors: true,
+            custom_fields: true,
+            security_dashboard: true,
+            work_item_status: true,
+            requirements: true
+          )
+        end
+
+        it 'includes licensed widgets for organization' do
+          widgets = issue_type.widgets(organization)
+          widget_types = widgets.map(&:widget_type)
+
+          expect(widget_types).to include('vulnerabilities', 'weight', 'health_status')
+        end
+
+        it 'includes CE widgets' do
+          widgets = issue_type.widgets(organization)
+          widget_types = widgets.map(&:widget_type)
+
+          expect(widget_types).to include('assignees', 'description', 'labels')
+        end
+      end
+
+      context 'when licensed features are not available' do
+        before do
+          stub_licensed_features(
+            iterations: false,
+            issue_weights: false,
+            issuable_health_status: false
+          )
+        end
+
+        it 'excludes unlicensed widgets' do
+          widgets = issue_type.widgets(organization)
+          widget_types = widgets.map(&:widget_type)
+
+          expect(widget_types).not_to include('iteration', 'weight', 'health_status')
         end
       end
     end

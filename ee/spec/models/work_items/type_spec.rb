@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe WorkItems::Type, feature_category: :team_planning do
   describe '#widgets' do
+    let_it_be(:organization) { build_stubbed(:organization) }
     let_it_be(:group) { build_stubbed(:group) }
     let_it_be(:project) { build_stubbed(:project, group: group) }
     let_it_be_with_refind(:work_item_type) { create(:work_item_type) }
@@ -61,6 +62,12 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
     with_them do
       before do
         stub_licensed_features(**feature_hash)
+      end
+
+      context 'when parent is an organization' do
+        let(:parent) { organization }
+
+        it_behaves_like 'work_item_type returning only licensed widgets'
       end
 
       context 'when parent is a group' do
@@ -195,6 +202,29 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
 
       it "returns an empty array" do
         expect(work_item_type.supported_conversion_types(resource_parent, developer_user)).to eq([])
+      end
+    end
+
+    context 'with organization as resource_parent' do
+      let_it_be(:organization) { build_stubbed(:organization) }
+
+      before do
+        stub_licensed_features(epics: true, requirements: true)
+      end
+
+      it 'supports licensed types but excludes epics' do
+        result = work_item_type.supported_conversion_types(organization, developer_user)
+
+        expect(result.map(&:base_type)).to include('requirement')
+        expect(result.map(&:base_type)).not_to include('epic')
+      end
+    end
+
+    context 'with nil as resource_parent' do
+      it 'handles nil resource_parent gracefully' do
+        result = work_item_type.supported_conversion_types(nil, developer_user)
+
+        expect(result.map(&:base_type)).to match_array(%w[incident task test_case ticket])
       end
     end
   end
