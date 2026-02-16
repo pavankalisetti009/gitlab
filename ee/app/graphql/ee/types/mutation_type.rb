@@ -411,6 +411,8 @@ module EE
         mount_mutation ::Mutations::VirtualRegistries::Container::Upstream::Update,
           experiment: { milestone: '18.8' }
         mount_mutation ::Mutations::WorkItems::Types::Update, experiment: { milestone: '18.10' }
+        mount_mutation ::Mutations::VirtualRegistries::Container::Registry::Upstream::Create,
+          experiment: { milestone: '18.10' }
 
         prepend(Types::DeprecatedMutations)
       end
