@@ -26607,7 +26607,7 @@ An AI catalog agent.
 | ---- | ---- | ----------- |
 | <a id="aicatalogagentcreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of when the item was created. |
 | <a id="aicatalogagentdescription"></a>`description` | [`String!`](#string) | Description of the item. |
-| <a id="aicatalogagentfoundational"></a>`foundational` | [`Boolean!`](#boolean) | Whether the item is a foundational agent (only on GitLab SaaS). |
+| <a id="aicatalogagentfoundational"></a>`foundational` | [`Boolean!`](#boolean) | Whether the item is a foundational item. |
 | <a id="aicatalogagentfoundationalflowreference"></a>`foundationalFlowReference` | [`String`](#string) | Foundational flow reference. |
 | <a id="aicatalogagentid"></a>`id` | [`ID!`](#id) | ID of the item. |
 | <a id="aicatalogagentitemtype"></a>`itemType` | [`AiCatalogItemType!`](#aicatalogitemtype) | Type of the item. |
@@ -26713,7 +26713,7 @@ An AI catalog flow.
 | ---- | ---- | ----------- |
 | <a id="aicatalogflowcreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of when the item was created. |
 | <a id="aicatalogflowdescription"></a>`description` | [`String!`](#string) | Description of the item. |
-| <a id="aicatalogflowfoundational"></a>`foundational` | [`Boolean!`](#boolean) | Whether the item is a foundational flow (only on GitLab SaaS). |
+| <a id="aicatalogflowfoundational"></a>`foundational` | [`Boolean!`](#boolean) | Whether the item is a foundational item. |
 | <a id="aicatalogflowfoundationalflowreference"></a>`foundationalFlowReference` | [`String`](#string) | Foundational flow reference. |
 | <a id="aicatalogflowid"></a>`id` | [`ID!`](#id) | ID of the item. |
 | <a id="aicatalogflowitemtype"></a>`itemType` | [`AiCatalogItemType!`](#aicatalogitemtype) | Type of the item. |
@@ -26859,6 +26859,7 @@ An AI catalog third party flow.
 | ---- | ---- | ----------- |
 | <a id="aicatalogthirdpartyflowcreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of when the item was created. |
 | <a id="aicatalogthirdpartyflowdescription"></a>`description` | [`String!`](#string) | Description of the item. |
+| <a id="aicatalogthirdpartyflowfoundational"></a>`foundational` | [`Boolean!`](#boolean) | Whether the item is a foundational item. |
 | <a id="aicatalogthirdpartyflowfoundationalflowreference"></a>`foundationalFlowReference` | [`String`](#string) | Foundational flow reference. |
 | <a id="aicatalogthirdpartyflowid"></a>`id` | [`ID!`](#id) | ID of the item. |
 | <a id="aicatalogthirdpartyflowitemtype"></a>`itemType` | [`AiCatalogItemType!`](#aicatalogitemtype) | Type of the item. |
@@ -58893,6 +58894,7 @@ Implementations:
 | ---- | ---- | ----------- |
 | <a id="aicatalogitemcreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of when the item was created. |
 | <a id="aicatalogitemdescription"></a>`description` | [`String!`](#string) | Description of the item. |
+| <a id="aicatalogitemfoundational"></a>`foundational` | [`Boolean!`](#boolean) | Whether the item is a foundational item. |
 | <a id="aicatalogitemfoundationalflowreference"></a>`foundationalFlowReference` | [`String`](#string) | Foundational flow reference. |
 | <a id="aicatalogitemid"></a>`id` | [`ID!`](#id) | ID of the item. |
 | <a id="aicatalogitemitemtype"></a>`itemType` | [`AiCatalogItemType!`](#aicatalogitemtype) | Type of the item. |
