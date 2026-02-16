@@ -107,7 +107,7 @@ RSpec.describe 'Querying a container virtual registry', :aggregate_failures, fea
             post_graphql(query, current_user: first_user)
           end
 
-          create(:virtual_registries_container_registry, group: group, upstreams: [upstream], name: 'registry 2')
+          create(:virtual_registries_container_registry, group: group, upstreams: [upstream], name: 'registry_1')
 
           expect do
             post_graphql(query, current_user: second_user)
@@ -117,9 +117,9 @@ RSpec.describe 'Querying a container virtual registry', :aggregate_failures, fea
 
         it 'returns correct registriesCount for upstream with multiple registries' do
           create(:virtual_registries_container_registry, group: group, upstreams: [upstream],
-            name: 'registry 2')
+            name: 'registry_2')
           create(:virtual_registries_container_registry, group: group, upstreams: [upstream],
-            name: 'registry 3')
+            name: 'registry_3')
 
           query = <<~GRAPHQL
             {
@@ -145,6 +145,26 @@ RSpec.describe 'Querying a container virtual registry', :aggregate_failures, fea
         let(:global_id) { "gid://gitlab/VirtualRegistries::Container::Upstream/#{non_existing_record_id}" }
 
         it_behaves_like 'returns null for virtualRegistriesContainerUpstream'
+      end
+
+      context 'with username field authorization' do
+        context 'when user is a guest' do
+          it 'returns null for the username field' do
+            expect(container_upstream_response['username']).to be_nil
+          end
+        end
+
+        context 'when user is a maintainer' do
+          before_all do
+            group.add_maintainer(current_user)
+          end
+
+          it 'returns the username field' do
+            post_graphql(query, current_user: current_user)
+
+            expect(graphql_data['virtualRegistriesContainerUpstream']['username']).to eq('user')
+          end
+        end
       end
     end
   end

@@ -18,6 +18,7 @@ module Types
         experiment: { milestone: '18.1' }
 
       field :username, GraphQL::Types::String, null: true,
+        authorize: :update_virtual_registry,
         description: 'Username to sign in to the upstream registry.',
         experiment: { milestone: '18.1' }
 

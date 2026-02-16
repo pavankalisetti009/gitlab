@@ -19,4 +19,33 @@ RSpec.describe Types::VirtualRegistries::UpstreamInterface, feature_category: :v
       expect(described_class.fields[field_name.to_s].type.to_type_signature).to eq(type_signature)
     end
   end
+
+  describe 'username field authorization' do
+    let(:current_user) { instance_double(User) }
+    let(:object) { instance_double(VirtualRegistries::Packages::Maven::Upstream) }
+    let(:ctx) { { current_user: current_user } }
+
+    subject(:username_field) { described_class.fields['username'] }
+
+    before do
+      allow(Ability).to receive(:allowed?).with(current_user, :update_virtual_registry,
+        object).and_return(update_virtual_registry_ability)
+    end
+
+    context 'when user has update_virtual_registry ability' do
+      let(:update_virtual_registry_ability) { true }
+
+      it 'authorizes the field' do
+        expect(username_field).to be_authorized(object, nil, ctx)
+      end
+    end
+
+    context 'when user does not have update_virtual_registry ability' do
+      let(:update_virtual_registry_ability) { false }
+
+      it 'does not authorize the field' do
+        expect(username_field).not_to be_authorized(object, nil, ctx)
+      end
+    end
+  end
 end
