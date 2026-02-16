@@ -100,32 +100,38 @@ function fixSameSlotsInsideTemplateFailingWhenUsingWhitespacePreserveDueToIssue6
   });
 }
 
+function transformAst(rootNode) {
+  const pendingNodes = [rootNode];
+  while (pendingNodes.length) {
+    const currentNode = pendingNodes.pop();
+    if (Array.isArray(currentNode.children)) {
+      // This one will be dropped all together with compiler when we drop Vue.js 2 support
+      modifyKeysInsideTemplateTag(currentNode);
+
+      dropVOnceForChildrenInsideVIfBecauseOfIssue7725(currentNode);
+
+      // See https://github.com/vuejs/core/issues/7909 for details
+      // However, this issue applies not only to root-level nodes
+      // But on any level comments could change slot emptiness detection
+      // so we simply drop them
+      filterCommentNodes(currentNode);
+
+      fixSameSlotsInsideTemplateFailingWhenUsingWhitespacePreserveDueToIssue6063(currentNode);
+
+      currentNode.children.forEach((child) => pendingNodes.push(child));
+    }
+  }
+  return rootNode;
+}
+
 module.exports = {
   isCustomElement,
   parse,
   compile(template, options) {
-    const rootNode = parse(template, options);
+    // template can be a string or an already-parsed AST (RootNode)
+    const rootNode = typeof template === 'string' ? parse(template, options) : template;
 
-    const pendingNodes = [rootNode];
-    while (pendingNodes.length) {
-      const currentNode = pendingNodes.pop();
-      if (Array.isArray(currentNode.children)) {
-        // This one will be dropped all together with compiler when we drop Vue.js 2 support
-        modifyKeysInsideTemplateTag(currentNode);
-
-        dropVOnceForChildrenInsideVIfBecauseOfIssue7725(currentNode);
-
-        // See https://github.com/vuejs/core/issues/7909 for details
-        // However, this issue applies not only to root-level nodes
-        // But on any level comments could change slot emptiness detection
-        // so we simply drop them
-        filterCommentNodes(currentNode);
-
-        fixSameSlotsInsideTemplateFailingWhenUsingWhitespacePreserveDueToIssue6063(currentNode);
-
-        currentNode.children.forEach((child) => pendingNodes.push(child));
-      }
-    }
+    transformAst(rootNode);
 
     return compilerDomCompile(rootNode, { isCustomElement, ...options });
   },
