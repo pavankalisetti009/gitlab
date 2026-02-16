@@ -6,7 +6,6 @@ module EE
       extend ::Gitlab::Utils::Override
       include ::Nav::GitlabDuoSettingsPage
 
-      TWO_FACTOR_AUTH_RECOVERY_SETTINGS_CHECK = 'two_factor_auth_recovery_settings_check'
       ACTIVE_USER_COUNT_THRESHOLD = 'active_user_count_threshold'
       GEO_ENABLE_HASHED_STORAGE = 'geo_enable_hashed_storage'
       GEO_MIGRATE_HASHED_STORAGE = 'geo_migrate_hashed_storage'
@@ -25,15 +24,6 @@ module EE
         return unless !user.owns_paid_namespace? && user.owns_group_without_trial?
 
         render 'shared/ultimate_with_enterprise_trial_callout_content'
-      end
-
-      def render_two_factor_auth_recovery_settings_check
-        return unless current_user &&
-          ::Gitlab.com? &&
-          current_user.two_factor_otp_enabled? &&
-          !user_dismissed?(TWO_FACTOR_AUTH_RECOVERY_SETTINGS_CHECK, 3.months.ago)
-
-        render 'shared/two_factor_auth_recovery_settings_check'
       end
 
       def show_pipl_compliance_alert?
@@ -58,13 +48,6 @@ module EE
         new_user_signups_cap = ::Gitlab::CurrentSettings.new_user_signups_cap
 
         new_user_signups_cap.to_i <= ::User.billable.count
-      end
-
-      override :dismiss_two_factor_auth_recovery_settings_check
-      def dismiss_two_factor_auth_recovery_settings_check
-        ::Users::DismissCalloutService.new(
-          container: nil, current_user: current_user, params: { feature_name: TWO_FACTOR_AUTH_RECOVERY_SETTINGS_CHECK }
-        ).execute
       end
 
       def show_joining_a_project_alert?

@@ -68,42 +68,6 @@ RSpec.describe EE::Users::CalloutsHelper, feature_category: :user_management do
     end
   end
 
-  describe '#render_two_factor_auth_recovery_settings_check' do
-    let(:user_two_factor_disabled) { create(:user) }
-    let(:user_two_factor_enabled) { create(:user, :two_factor) }
-    let(:anonymous) { nil }
-
-    where(:kind_of_user, :is_gitlab_com?, :dismissed_callout?, :should_render?) do
-      :anonymous                | false | false | false
-      :anonymous                | true  | false | false
-      :user_two_factor_disabled | false | false | false
-      :user_two_factor_disabled | true  | false | false
-      :user_two_factor_disabled | true  | true  | false
-      :user_two_factor_enabled  | false | false | false
-      :user_two_factor_enabled  | true  | false | true
-      :user_two_factor_enabled  | true  | true  | false
-    end
-
-    with_them do
-      before do
-        user = send(kind_of_user)
-        allow(helper).to receive(:current_user).and_return(user)
-        allow(Gitlab).to receive(:com?).and_return(is_gitlab_com?)
-        allow(user).to receive(:dismissed_callout?).and_return(dismissed_callout?) if user
-      end
-
-      it do
-        if should_render?
-          expect(helper).to receive(:render).with('shared/two_factor_auth_recovery_settings_check')
-        else
-          expect(helper).not_to receive(:render)
-        end
-
-        helper.render_two_factor_auth_recovery_settings_check
-      end
-    end
-  end
-
   describe '.show_new_user_signups_cap_reached?' do
     subject { helper.show_new_user_signups_cap_reached? }
 
@@ -213,27 +177,6 @@ RSpec.describe EE::Users::CalloutsHelper, feature_category: :user_management do
           expect(show_pipl_compliance_alert?).to be(false)
         end
       end
-    end
-  end
-
-  describe '#dismiss_two_factor_auth_recovery_settings_check' do
-    let_it_be(:user) { create(:user) }
-
-    before do
-      allow(helper).to receive(:current_user).and_return(user)
-    end
-
-    it 'dismisses `TWO_FACTOR_AUTH_RECOVERY_SETTINGS_CHECK` callout' do
-      expect(::Users::DismissCalloutService)
-        .to receive(:new)
-        .with(
-          container: nil,
-          current_user: user,
-          params: { feature_name: described_class::TWO_FACTOR_AUTH_RECOVERY_SETTINGS_CHECK }
-        )
-        .and_call_original
-
-      helper.dismiss_two_factor_auth_recovery_settings_check
     end
   end
 
