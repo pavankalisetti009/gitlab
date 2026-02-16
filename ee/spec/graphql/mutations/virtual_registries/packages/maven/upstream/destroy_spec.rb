@@ -2,13 +2,13 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::VirtualRegistries::Container::Upstream::Destroy, feature_category: :virtual_registry do
+RSpec.describe Mutations::VirtualRegistries::Packages::Maven::Upstream::Destroy, feature_category: :virtual_registry do
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:user) }
   let_it_be(:group) { create(:group, :private) }
-  let_it_be(:registry) { create(:virtual_registries_container_registry, group: group) }
-  let_it_be(:upstream) { create(:virtual_registries_container_upstream, registries: [registry]) }
+  let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, group: group) }
+  let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, registries: [registry]) }
 
   let(:mutation_params) do
     {
@@ -25,7 +25,7 @@ RSpec.describe Mutations::VirtualRegistries::Container::Upstream::Destroy, featu
   describe '#resolve' do
     before do
       stub_config(dependency_proxy: { enabled: true })
-      stub_licensed_features(container_virtual_registry: true)
+      stub_licensed_features(packages_virtual_registry: true)
       allow(VirtualRegistries::Setting).to receive(:find_for_group).with(group).and_return(build_stubbed(
         :virtual_registries_setting, group: group))
     end
@@ -46,7 +46,7 @@ RSpec.describe Mutations::VirtualRegistries::Container::Upstream::Destroy, featu
       let(:mutation_params) do
         {
           id: ::Gitlab::GlobalId.as_global_id(non_existing_record_id,
-            model_name: 'VirtualRegistries::Container::Upstream')
+            model_name: 'VirtualRegistries::Packages::Maven::Upstream')
         }
       end
 
@@ -68,7 +68,7 @@ RSpec.describe Mutations::VirtualRegistries::Container::Upstream::Destroy, featu
 
       context 'when DestroyUpstreamService returns an error' do
         before do
-          allow_next_instance_of(::VirtualRegistries::Container::DestroyUpstreamService) do |service|
+          allow_next_instance_of(::VirtualRegistries::Packages::Maven::DestroyUpstreamService) do |service|
             allow(service).to receive(:execute).and_return(
               ServiceResponse.error(message: 'Error')
             )
@@ -91,9 +91,9 @@ RSpec.describe Mutations::VirtualRegistries::Container::Upstream::Destroy, featu
       end
     end
 
-    context 'with container_virtual_registries feature flag turned off' do
+    context 'with maven_virtual_registry feature flag turned off' do
       before do
-        stub_feature_flags(container_virtual_registries: false)
+        stub_feature_flags(maven_virtual_registry: false)
       end
 
       it_behaves_like 'raises resource not available error'
