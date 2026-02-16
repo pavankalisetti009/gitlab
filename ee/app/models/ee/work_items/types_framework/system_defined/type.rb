@@ -75,14 +75,12 @@ module EE
             all_types = super - BASE_TYPES.pluck(:base_type) # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- It's an array of hashed not active record relations
 
             ee_base_types = self.class.all.filter_map do |type|
-              if type.licensed? && resource_parent.licensed_feature_available?(type.license_name.to_sym)
+              if type.licensed? && feature_available_for_resource?(resource_parent, type.license_name.to_sym)
                 type.base_type.to_s
               end
             end.compact
 
-            group = resource_parent.is_a?(Group) ? resource_parent : resource_parent.group
-
-            ee_base_types -= %w[epic] unless Ability.allowed?(user, :create_epic, group)
+            ee_base_types -= %w[epic] unless epic_allowed?(resource_parent, user)
 
             project = if resource_parent.is_a?(Project)
                         resource_parent
@@ -110,6 +108,29 @@ module EE
           def supports_conversion?
             value = configuration_class.try(:supports_conversion?)
             value.nil? ? true : value
+          end
+
+          def feature_available_for_resource?(resource_parent, licensed_feature)
+            case resource_parent
+            when ::Organizations::Organization
+              # For organizations, check the license directly since they don't have licensed_feature_available?
+              License.feature_available?(licensed_feature)
+            else
+              resource_parent&.licensed_feature_available?(licensed_feature)
+            end
+          end
+
+          def epic_allowed?(resource_parent, user)
+            group = case resource_parent
+                    when ::Organizations::Organization
+                      nil
+                    when Group
+                      resource_parent
+                    else
+                      resource_parent&.group
+                    end
+
+            group && Ability.allowed?(user, :create_epic, group)
           end
         end
       end
