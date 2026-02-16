@@ -23,6 +23,7 @@ RSpec.describe 'Querying maven upstream registries for top-level group', feature
             nodes {
               id
               name
+              username
               registriesCount
             }
           }
@@ -80,6 +81,24 @@ RSpec.describe 'Querying maven upstream registries for top-level group', feature
 
       it 'returns count for the virtualRegistriesPackagesMavenUpstreams field' do
         expect(maven_upstreams_response['count']).to eq(1)
+      end
+
+      context 'with username field authorization' do
+        it 'returns null for a guest' do
+          expect(maven_upstreams_response['nodes']).to all(include('username' => nil))
+        end
+
+        context 'when user is a maintainer' do
+          before_all do
+            group.add_maintainer(current_user)
+          end
+
+          it 'returns the username' do
+            expect(maven_upstreams_response['nodes']).to contain_exactly(
+              hash_including('username' => upstream.username)
+            )
+          end
+        end
       end
 
       context 'when upstream name search does not return any value' do

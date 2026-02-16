@@ -18,6 +18,7 @@ RSpec.describe 'Querying a maven upstream registry', feature_category: :virtual_
         virtualRegistriesPackagesMavenUpstream(id: "#{global_id}") {
           id
           name
+          username
           registriesCount
           registryUpstreams {
             id
@@ -122,6 +123,26 @@ RSpec.describe 'Querying a maven upstream registry', feature_category: :virtual_
         let(:global_id) { "gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/#{non_existing_record_id}" }
 
         it_behaves_like 'returns null for virtualRegistriesPackagesMavenUpstream'
+      end
+
+      context 'with username field authorization' do
+        context 'when user is a guest' do
+          it 'returns null for the username field' do
+            expect(maven_upstream_response['username']).to be_nil
+          end
+        end
+
+        context 'when user is a maintainer' do
+          before_all do
+            group.add_maintainer(current_user)
+          end
+
+          it 'returns the username field' do
+            post_graphql(query, current_user: current_user)
+
+            expect(graphql_data['virtualRegistriesPackagesMavenUpstream']['username']).to eq('user')
+          end
+        end
       end
     end
   end

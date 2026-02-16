@@ -75,29 +75,46 @@ RSpec.describe 'Querying container virtual upstreams for top-level group', :aggr
         expect(container_upstreams_response['count']).to eq(2)
       end
 
-      it 'returns the virtualRegistriesContainerUpstreams fields' do
-        container_upstreams = container_upstreams_response['nodes']
+      context 'with guest access' do
+        it 'returns the virtualRegistriesContainerUpstreams fields with username nil' do
+          container_upstreams = container_upstreams_response['nodes']
 
-        expect(container_upstreams).to match_array([
-          {
-            'id' => upstream1.to_global_id.to_s,
-            'url' => upstream1.url,
-            'cacheValidityHours' => upstream1.cache_validity_hours,
-            'username' => upstream1.username,
-            'name' => upstream1.name,
-            'description' => upstream1.description,
-            'registriesCount' => 1
-          },
-          {
-            'id' => upstream2.to_global_id.to_s,
-            'url' => upstream2.url,
-            'cacheValidityHours' => upstream2.cache_validity_hours,
-            'username' => upstream2.username,
-            'name' => upstream2.name,
-            'description' => upstream2.description,
-            'registriesCount' => 1
-          }
-        ])
+          expect(container_upstreams).to match_array([
+            {
+              'id' => upstream1.to_global_id.to_s,
+              'url' => upstream1.url,
+              'cacheValidityHours' => upstream1.cache_validity_hours,
+              'username' => nil,
+              'name' => upstream1.name,
+              'description' => upstream1.description,
+              'registriesCount' => 1
+            },
+            {
+              'id' => upstream2.to_global_id.to_s,
+              'url' => upstream2.url,
+              'cacheValidityHours' => upstream2.cache_validity_hours,
+              'username' => nil,
+              'name' => upstream2.name,
+              'description' => upstream2.description,
+              'registriesCount' => 1
+            }
+          ])
+        end
+      end
+
+      context 'with maintainer access' do
+        before_all do
+          group.add_maintainer(current_user)
+        end
+
+        it 'returns the username field value' do
+          container_upstreams = container_upstreams_response['nodes']
+
+          expect(container_upstreams).to match_array([
+            hash_including('username' => upstream1.username),
+            hash_including('username' => upstream2.username)
+          ])
+        end
       end
 
       context 'when search by upstream name' do
