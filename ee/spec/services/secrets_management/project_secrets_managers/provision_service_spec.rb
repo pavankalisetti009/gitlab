@@ -323,7 +323,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
         end.to raise_error(
           SecretsManagement::SecretsManagerClient::ApiError,
           "error executing cel program: " \
-            "CEL role '#{secrets_manager.user_auth_role}' blocked authorization with message: " \
+            "Cel role '#{secrets_manager.user_auth_role}' blocked authorization with message: " \
             "token project_id does not match role base"
         )
       end
@@ -350,7 +350,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
           )
         end.to raise_error(
           SecretsManagement::SecretsManagerClient::ApiError,
-          "error executing cel program: CEL role '#{secrets_manager.user_auth_role}' " \
+          "error executing cel program: Cel role '#{secrets_manager.user_auth_role}' " \
             "blocked authorization with message: missing user_id"
         )
       end
