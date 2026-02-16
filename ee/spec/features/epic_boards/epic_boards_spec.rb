@@ -37,6 +37,9 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, :saas, feature_category: :po
 
     it_behaves_like 'user can use agentic chat' do
       subject { group_epic_boards_path(group) }
+
+      let(:container) { group }
+      let(:entity) { epic1 }
     end
 
     context 'default' do

@@ -18,6 +18,9 @@ RSpec.describe 'Merge request > User sees approval widget', :js, :saas, feature_
 
   it_behaves_like 'user can use agentic chat' do
     subject { project_merge_request_path(project, merge_request) }
+
+    let(:container) { project }
+    let(:entity) { merge_request }
   end
 
   context 'when merge when threads resolved is active' do
