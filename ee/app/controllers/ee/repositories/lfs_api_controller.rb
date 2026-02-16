@@ -33,7 +33,7 @@ module EE
         return super unless ::Gitlab::Geo.secondary_with_primary?
 
         translation = _('You cannot write to a read-only secondary GitLab Geo instance. Please use %{link_to_primary_node} instead.')
-        message = translation % { link_to_primary_node: geo_primary_default_url_to_repo(project) }
+        message = format(translation, link_to_primary_node: geo_primary_default_url_to_repo(project))
         message.html_safe
       end
 

@@ -20,7 +20,7 @@ module AuditEvents
     def validate_date_range
       return unless (params[:created_before].to_date - params[:created_after].to_date).days > DATE_RANGE_LIMIT.days
 
-      message = _('Date range limited to %{number} days') % { number: DATE_RANGE_LIMIT }
+      message = format(_('Date range limited to %{number} days'), number: DATE_RANGE_LIMIT)
       respond_to do |format|
         format.html do
           flash[:alert] = message
