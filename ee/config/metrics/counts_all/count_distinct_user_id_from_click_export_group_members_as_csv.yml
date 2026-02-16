@@ -2,6 +2,8 @@
 key_path: redis_hll_counters.count_distinct_user_id_from_click_export_group_members_as_csv
 description: Count of unique users that export group members as CSV
 product_group: organizations
+product_categories:
+- groups_and_projects
 performance_indicator_type: []
 value_type: number
 status: active
