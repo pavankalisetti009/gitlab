@@ -395,6 +395,10 @@ module EE
           experiment: { milestone: '18.9' }
         mount_mutation ::Mutations::VirtualRegistries::Packages::Maven::Upstream::Destroy,
           experiment: { milestone: '18.9' }
+        mount_mutation ::Mutations::VirtualRegistries::Packages::Maven::Registry::Cache::Destroy,
+          experiment: { milestone: '18.10' }
+        mount_mutation ::Mutations::VirtualRegistries::Packages::Maven::Upstream::Cache::Destroy,
+          experiment: { milestone: '18.10' }
         mount_mutation ::Mutations::ComplianceManagement::Projects::ComplianceViolations::Update,
           experiment: { milestone: '18.2' }
         mount_mutation ::Mutations::ComplianceManagement::Projects::ComplianceViolations::LinkIssue, experiment: {
